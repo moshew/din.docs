@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base layout */
+html, body, #root {
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  direction: rtl;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  @apply w-2 h-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-[#c8c6c4] hover:bg-[#a19f9d] transition-colors;
+}
+
+/* Animation for loading spinner */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* RTL specific styles */
+.rpv-core__viewer {
+  direction: ltr !important;
+}
+
+.rpv-core__menu {
+  direction: rtl !important;
+}
