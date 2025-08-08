@@ -42,7 +42,10 @@ function createWindow() {
 
   mainWindow.once('ready-to-show', () => {
     setTimeout(() => {
-      //mainWindow.maximize();
+      // Maximize the window by default
+      try {
+        mainWindow.maximize();
+      } catch {}
     }, 0);
   });
 

@@ -42,14 +42,14 @@ export default function App() {
       const result = await window.ipcRenderer.invoke("loadCase", file.id);
       
       if (!result || result.status !== 'success' || !result.case) {
-        console.log('Invalid result structure:', result);
+        // Invalid result structure
         setSelectedFile(file);
         setSelectedPdf(null);
         return;
       }
 
       if (!result.case.files) {
-        console.log('Case has no files property:', result.case);
+        // Case has no files
         setSelectedFile(file);
         setSelectedPdf(null);
         return;
@@ -180,13 +180,13 @@ export default function App() {
   return (
     <div className="h-screen flex flex-col bg-[#faf9f8]">
       <div className="bg-[#EFF4F9] border-b border-[#e1dfdd] shadow-sm">
-        <div className="h-14 flex items-center px-3">
-          <div className="flex items-center mr-3">
-            <Scale className="w-6 h-6 text-[#323130] ml-4" />
-            <span className="text-lg font-semibold text-[#323130]">דין.דוקס - הפקת וניהול מסמכים משפטיים</span>
+        <div className="h-14 flex items-center pl-0 pr-0 relative">
+          {/* Icon anchored to the left */}
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center">
+            <Scale className="w-7 h-7 text-[#323130]" />
           </div>
           
-          <div className="flex-1 flex items-center justify-center relative">
+          <div className="order-2 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <div className="w-96 relative">
               <Search className="w-4 h-4 text-[#616161] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
@@ -199,25 +199,33 @@ export default function App() {
             </div>
           </div>
           
-          <div className="flex items-center space-x-2 order-last">
+          {/* Window controls anchored to the right, then a thin divider and title next to them */}
+          <div className="absolute right-0 top-0 h-14 flex items-center select-none pr-0">
             <button
-              className="p-2 hover:bg-[#e1dfdd] transition-colors"
-              title="מזער"
+              className="w-12 h-14 transition-colors hover:bg-[#E81123] flex items-center justify-center group"
+              title="סגור"
+              onClick={() => window.ipcRenderer.invoke('window:close')}
             >
-              <Minus className="w-4 h-4 text-[#323130]" />
+              <X className="w-4 h-4 text-[#323130] group-hover:text-white" />
             </button>
             <button
-              className="p-2 hover:bg-[#e1dfdd] transition-colors"
+              className="w-12 h-14 hover:bg-[#e1dfdd] transition-colors flex items-center justify-center"
               title="הגדל"
+              onClick={() => window.ipcRenderer.invoke('window:maximize')}
             >
               <Square className="w-4 h-4 text-[#323130]" />
             </button>
             <button
-              className="p-2 hover:bg-[#e1dfdd] transition-colors"
-              title="סגור"
+              className="w-12 h-14 hover:bg-[#e1dfdd] transition-colors flex items-center justify-center"
+              title="מזער"
+              onClick={() => window.ipcRenderer.invoke('window:minimize')}
             >
-              <X className="w-4 h-4 text-[#323130]" />
+              <Minus className="w-4 h-4 text-[#323130]" />
             </button>
+
+            {/* Thin divider and title snug next to buttons */}
+            <div className="h-6 w-px bg-[#e1dfdd] mx-2" />
+            <span className="text-lg font-semibold text-[#323130] mr-2">דין.דוקס - הפקת וניהול מסמכים משפטיים</span>
             
           </div>
         </div>

@@ -132,4 +132,27 @@ export function register(mainWindow) {
     pdf.generate(mainWindow, files);
 		return { status: 'success' }
   });
+
+  // Window controls
+  ipcMain.handle('window:minimize', () => {
+    if (!mainWindow) return { status: 'error' };
+    mainWindow.minimize();
+    return { status: 'success' };
+  });
+
+  ipcMain.handle('window:maximize', () => {
+    if (!mainWindow) return { status: 'error' };
+    if (mainWindow.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow.maximize();
+    }
+    return { status: 'success' };
+  });
+
+  ipcMain.handle('window:close', () => {
+    if (!mainWindow) return { status: 'error' };
+    mainWindow.close();
+    return { status: 'success' };
+  });
 }
