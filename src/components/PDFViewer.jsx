@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import { FileText, Upload } from 'lucide-react';
-import { FastScrollPDF } from 'react-fast-scroll-pdf';
+import { usePDF, PDFDocument } from 'react-fast-scroll-pdf';
 
-// Fast PDF viewer styles - optimized for performance
+// Fast PDF viewer styles - optimized for performance with width fit
 const pdfViewerStyles = `
   .fast-pdf-container {
     width: 100%;
@@ -26,6 +26,21 @@ const pdfViewerStyles = `
   
   .fast-pdf-container::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
+  }
+
+  .fast-pdf-viewer {
+    width: 100%;
+    height: 100%;
+  }
+
+  .fast-pdf-viewer canvas {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .fast-pdf-viewer div[data-page] {
+    max-width: 100%;
+    margin: 0 auto;
   }
 `;
 
@@ -81,6 +96,7 @@ export function PDFViewer({ path, message, onFileSelect }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const urlRef = useRef(null);
+  // Advanced viewer is rendered lazily to avoid initializing the hook with null source
 
   // Debug logs removed for production
 
@@ -178,6 +194,71 @@ export function PDFViewer({ path, message, onFileSelect }) {
     };
   }, []);
 
+  // Local advanced viewer component to safely use the hook only when source exists
+  const AdvancedViewer = ({ source }) => {
+    const scrollContainerRef = useRef(null);
+    const viewerRef = useRef(null);
+    const hasFitRef = useRef(false);
+    const [isReady, setIsReady] = useState(false);
+
+    const {
+      pages,
+      changeZoomStart,
+      changeZoomEnd,
+      renderCurrentPage,
+      viewportWidth,
+    } = usePDF({
+      source,
+      scrollContainer: scrollContainerRef.current,
+      viewer: viewerRef.current,
+    });
+
+    const fitToWidth = useCallback(() => {
+      const container = scrollContainerRef.current;
+      if (!container || !viewportWidth) return;
+      const scale = (container.clientWidth / viewportWidth) * 0.98;
+      if (!Number.isFinite(scale) || scale <= 0) return;
+      changeZoomStart(scale);
+      const t = setTimeout(() => changeZoomEnd(), 0);
+      return () => clearTimeout(t);
+    }, [viewportWidth, changeZoomStart, changeZoomEnd]);
+
+    // Run fit before paint to avoid visible flicker
+    useLayoutEffect(() => {
+      if (hasFitRef.current) {
+        if (!isReady) setIsReady(true);
+        return;
+      }
+      if (!source || !viewportWidth) return;
+      fitToWidth();
+      hasFitRef.current = true;
+      // reveal on next frame after zoom applied
+      const id = requestAnimationFrame(() => setIsReady(true));
+      return () => cancelAnimationFrame(id);
+    }, [fitToWidth, source, viewportWidth, isReady]);
+
+    useEffect(() => {
+      const container = scrollContainerRef.current;
+      if (!container) return undefined;
+      const onScroll = () => renderCurrentPage();
+      container.addEventListener('scroll', onScroll);
+      return () => container.removeEventListener('scroll', onScroll);
+    }, [renderCurrentPage]);
+
+    return (
+      <div className="h-full w-full flex flex-col">
+        <div
+          ref={scrollContainerRef}
+          className="h-full w-full overflow-auto"
+          style={{ height: '100%', visibility: isReady ? 'visible' : 'hidden' }}
+        >
+          <div ref={viewerRef} className="w-full fast-pdf-viewer">
+            <PDFDocument pages={pages} />
+          </div>
+        </div>
+      </div>
+    );
+  };
 
 
   // Show loading/error states when needed, otherwise show PDF
@@ -201,16 +282,11 @@ export function PDFViewer({ path, message, onFileSelect }) {
     return <EmptyState message="טוען PDF..." />;
   }
 
-  // Render Fast PDF viewer - much faster than react-pdf
+  // Render advanced viewer with automatic width fit on open
   return (
     <div className="h-full w-full bg-[#faf9f8] fast-pdf-container">
       {pdfSource && (
-        <FastScrollPDF 
-          source={pdfSource}
-          enableAnnotations={true}
-          className="fast-pdf-viewer"
-          style={{ width: '100%', height: '100%' }}
-        />
+        <AdvancedViewer source={pdfSource} />
       )}
     </div>
   );
