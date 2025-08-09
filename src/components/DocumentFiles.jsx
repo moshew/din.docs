@@ -121,8 +121,8 @@ export function DocumentFiles({
       if (section === 'main') {
         const file = droppedFiles[0];
         onMainFileSelect({
-          name: getFileNameFromPath(file.path || file.name),
-          path: file.path || file.name
+          name: getFileNameFromPath(file.path),
+          path: file.path
         });
       } else if (section === 'attachments') {
         handleAttachmentsAdd(droppedFiles);
@@ -138,8 +138,8 @@ export function DocumentFiles({
     const fileDataArray = files
       .filter(file => file instanceof File)
       .map(file => ({
-        name: getFileNameFromPath(file.path || file.name),
-        path: file.path || file.name
+        name: getFileNameFromPath(file.path),
+        path: file.path
       }));
 
     fileDataArray.forEach(fileData => {
@@ -172,7 +172,7 @@ export function DocumentFiles({
       const result = await window.ipcRenderer.invoke("checkCase", {
         case: {
           id: selectedFile.id,
-          name: selectedFile.name,
+          title: selectedFile.title,
           files: {
             main: selectedFile.mainFile.path,
             attachments: selectedFile.attachments.map(att => ({
@@ -289,7 +289,7 @@ export function DocumentFiles({
     <div className="h-full flex flex-col">
       <div className="h-10 flex items-center px-3 border-b border-[#e1dfdd] bg-white">
         <h2 className="text-base font-semibold text-[#323130] truncate">
-          {selectedFile?.name}
+          {selectedFile?.title}
         </h2>
       </div>
 

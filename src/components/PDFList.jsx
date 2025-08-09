@@ -57,13 +57,13 @@ export function PDFList({
     if (newFileName.trim()) {
       try {
         const result = await window.ipcRenderer.invoke("newCase", {
-          name: newFileName.trim()
+          title: newFileName.trim()
         });
         
         if (result.status === 'success') {
           const newFile = {
             id: result.id,
-            name: newFileName.trim()
+            title: newFileName.trim()
           };
           onSelectFile(newFile);
           setNewFileName('');
@@ -104,7 +104,7 @@ export function PDFList({
   const handleEditClick = (file, event) => {
     event.stopPropagation();
     setEditingFileId(file.id);
-    setEditedFileName(file.name);
+    setEditedFileName(file.title);
   };
 
   const handleSaveEdit = (file, event) => {
@@ -187,7 +187,7 @@ export function PDFList({
                 />
               ) : (
                 <p className="text-sm font-medium text-[#323130] truncate">
-                  {file.name}
+                  {file.title}
                 </p>
               )}
               <div className="text-xs text-[#605e5c] mt-0.5 text-right">

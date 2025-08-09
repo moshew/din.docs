@@ -28,14 +28,19 @@ function init() {
 function registerHandlers() {
   ipcMain.handle('newCase', async (event, caseToAdd) => {
     const id = generateKey();
-    db.cases.push({ id, name: caseToAdd.name });
-    db.case.push({ id, files: { main: '', attachments: [], output: '' } });
+    const title = caseToAdd.title;
+    db.cases.push({ id, title });
+    db.case.push({ id, title, path: '', files: { main: '', attachments: [] } });
     fs.writeFileSync(dbFilename, JSON.stringify(db));
     return { status: 'success', cases: db.cases, id };
   });
 
   ipcMain.handle('editCase', async (event, caseToEdit) => {
-    getById(db.cases, caseToEdit.id).name = caseToEdit.name;
+    const title = caseToEdit.title;
+    const lc = getById(db.cases, caseToEdit.id);
+    if (lc) lc.title = title;
+    const full = getById(db.case, caseToEdit.id);
+    if (full) full.title = title;
     fs.writeFileSync(dbFilename, JSON.stringify(db));
     return { status: 'success', cases: db.cases, id: caseToEdit.id };
   });
@@ -54,16 +59,34 @@ function registerHandlers() {
   });
 
   ipcMain.handle('loadCase', async (event, caseId) => {
-    const caseData = getById(db.case, caseId);
-    return { status: 'success', case: { id: caseId, name: getById(db.cases, caseId).name, files: caseData.files } };
+    const caseData = getById(db.case, caseId) || { title: '', path: '', files: { main: '', attachments: [] } };
+    const listData = getById(db.cases, caseId) || { title: '' };
+    return {
+      status: 'success',
+      case: {
+        id: caseId,
+        title: listData.title,
+        path: caseData.path,
+        files: caseData.files,
+      },
+    };
   });
 
   ipcMain.handle('saveCase', async (event, caseToSave) => {
-		console.log('saveCase')
-    getById(db.case, caseToSave.id).files = caseToSave.files;
+    console.log('saveCase');
+    const current = getById(db.case, caseToSave.id);
+    if (current) {
+      if (caseToSave.files) current.files = caseToSave.files;
+      if (typeof caseToSave.path === 'string') current.path = caseToSave.path;
+      if (typeof caseToSave.title === 'string') {
+        current.title = caseToSave.title;
+        const lc = getById(db.cases, caseToSave.id);
+        if (lc) lc.title = caseToSave.title;
+      }
+    }
     fs.writeFileSync(dbFilename, JSON.stringify(db));
-		console.log('saveCase', JSON.stringify(caseToSave))
-		return { status: 'success' }
+    console.log('saveCase', JSON.stringify(caseToSave));
+    return { status: 'success' };
   });
 }
 

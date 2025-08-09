@@ -41,37 +41,25 @@ export default function App() {
       setLoadError(null);
       const result = await window.ipcRenderer.invoke("loadCase", file.id);
       
-      if (!result || result.status !== 'success' || !result.case) {
-        // Invalid result structure
-        setSelectedFile(file);
-        setSelectedPdf(null);
-        return;
-      }
+      if (!result || result.status !== 'success' || !result.case) return;
 
-      if (!result.case.files) {
-        // Case has no files
-        setSelectedFile(file);
-        setSelectedPdf(null);
-        return;
-      }
+      if (!result.case.files) return;
 
       const updatedFile = {
         id: file.id,
-        name: result.case.name || file.name,
+        title: result.case.title,
         updated_date: result.case.updated_date,
         mainFile: result.case.files.main ? {
           name: result.case.files.main.split('/').pop().replace(/\.[^/.]+$/, ''),
           path: result.case.files.main
         } : null,
         attachments: result.case.files.attachments ? result.case.files.attachments.map(attachment => ({
-          name: attachment.title || attachment.path.split('/').pop().replace(/\.[^/.]+$/, ''),
+          name: attachment.title,
           path: attachment.path
         })) : [],
-        outputFile: result.case.files.output ? {
-          name: result.case.files.output.path.split('/').pop().replace(/\.[^/.]+$/, ''),
-          path: result.case.files.output.path,
-          url: result.case.files.output.url,
-          updated_date: result.case.files.output.updated
+        outputFile: result.case.path ? {
+          name: result.case.path.split('/').pop().replace(/\.[^/.]+$/, ''),
+          path: result.case.path
         } : null
       };
 
@@ -89,8 +77,6 @@ export default function App() {
       setSelectedPdf(updatedFile.outputFile);
     } catch (error) {
       console.error('Failed to load case:', error);
-      setSelectedFile(file);
-      setSelectedPdf(null);
     }
   };
 
@@ -154,10 +140,15 @@ export default function App() {
     }
   };
 
-  const handleUpdateTitle = (fileId, newTitle) => {
-    setFiles(prev => prev.map(f => f.id === fileId ? { ...f, name: newTitle } : f));
+  const handleUpdateTitle = async (fileId, newTitle) => {
+    try {
+      await window.ipcRenderer.invoke('editCase', { id: fileId, title: newTitle });
+    } catch (e) {
+      // proceed with UI update even if persistence fails
+    }
+    setFiles(prev => prev.map(f => f.id === fileId ? { ...f, title: newTitle } : f));
     if (selectedFile?.id === fileId) {
-      setSelectedFile(prev => ({ ...prev, name: newTitle }));
+      setSelectedFile(prev => ({ ...prev, title: newTitle }));
     }
   };
 
@@ -235,7 +226,7 @@ export default function App() {
         <div className={`${sidebarWidth} bg-[#faf9f8] transition-[width] duration-150 ease-out overflow-hidden border-l border-[#e1dfdd]`}>
           <PDFList
             files={files.filter(file => 
-              file.name?.toLowerCase().includes(searchQuery.toLowerCase())
+              (file.title || '').toLowerCase().includes(searchQuery.toLowerCase())
             )}
             selectedFile={selectedFile}
             onSelectFile={handleSelectFile}
@@ -284,7 +275,7 @@ export default function App() {
           {selectedFile && (
             <span className="flex items-center">
               <Info className="w-3.5 h-3.5 mr-1.5" />
-              {`${selectedFile.name} - ${selectedFile.mainFile ? Math.round(selectedFile.mainFile.size / 1024) : 0} KB`}
+              {`${selectedFile.title} - ${selectedFile.mainFile ? Math.round(selectedFile.mainFile.size / 1024) : 0} KB`}
             </span>
           )}
         </div>

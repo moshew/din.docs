@@ -55,12 +55,12 @@ export function register(mainWindow) {
     let reCheck = args.reCheck;
     let newPath = reCheck && reCheck.applyForAll ? path.dirname(reCheck.fixedPath) : null;
 
-    if (!fs.existsSync(doc.files.main)) {
+    if (doc.files && doc.files.main && !fs.existsSync(doc.files.main)) {
       missingPath = reCheck ? (doc.files.main = reCheck.fixedPath) : doc.files.main;
       firstMissingPath = false;
     }
 
-    if (!missingPath) {
+    if (!missingPath && doc.files && Array.isArray(doc.files.attachments)) {
       for (let attachment of doc.files.attachments) {
         let attachmentPath = attachment.path;
         if (!fs.existsSync(attachmentPath)) {

@@ -29,7 +29,7 @@ export function DocumentFiles({
 
   return (
     <div className="h-full flex flex-col">
-      <Header title={selectedFile?.name} />
+      <Header title={selectedFile?.title} />
 
       <Content
         selectedFile={selectedFile}

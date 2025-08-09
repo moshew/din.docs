@@ -19,17 +19,17 @@ export function MainDocument({ mainFile, onMainFileSelect, onMainFileClick, drag
         path: filePath
       };
 
-      if (selectedFile) {
+       if (selectedFile) {
         const result = await window.ipcRenderer.invoke("saveCase", {
           id: selectedFile.id,
-          name: selectedFile.name,
+          title: selectedFile.title,
+          path: selectedFile.outputFile?.path || '',
           files: {
             main: fileData.path,
             attachments: selectedFile.attachments.map(att => ({
               path: att.path,
               title: att.name
-            })),
-            output: selectedFile.output
+            }))
           }
         });
 
@@ -38,7 +38,7 @@ export function MainDocument({ mainFile, onMainFileSelect, onMainFileClick, drag
         }
       }
 
-      onMainFileSelect(fileData);
+       onMainFileSelect(fileData);
     } catch (error) {
       console.error('Error selecting file:', error?.message || 'Unknown error occurred');
     }

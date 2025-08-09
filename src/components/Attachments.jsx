@@ -57,15 +57,14 @@ export function Attachments({
       if (selectedFile) {
         const result = await window.ipcRenderer.invoke("saveCase", {
           id: selectedFile.id,
+          title: selectedFile.title,
+          path: selectedFile.outputFile ? selectedFile.outputFile.path : '',
           files: {
             main: selectedFile.mainFile?.path || null,
             attachments: editedAttachments.map(att => ({
               path: att.path,
               title: att.name
-            })),
-            output: selectedFile.outputFile ? {
-              path: selectedFile.outputFile.path
-            } : null
+            }))
           }
         });
 

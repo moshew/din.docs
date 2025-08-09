@@ -52,14 +52,14 @@ export function useDocumentFiles({
           if (selectedFile) {
             const updatedCase = {
               id: selectedFile.id,
-              name: selectedFile.name,
+              title: selectedFile.title,
+              path: detail.output.path,
               files: {
                 main: selectedFile.mainFile?.path || null,
                 attachments: selectedFile.attachments.map(att => ({
                   path: att.path,
                   title: att.name
-                })),
-                output: detail.output
+                }))
               }
             };
 
@@ -227,7 +227,7 @@ export function useDocumentFiles({
       const result = await window.ipcRenderer.invoke("checkCase", {
         case: {
           id: selectedFile.id,
-          name: selectedFile.name,
+          title: selectedFile.title,
           files: {
             main: selectedFile.mainFile.path,
             attachments: selectedFile.attachments.map(att => ({
