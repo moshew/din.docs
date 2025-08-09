@@ -54,6 +54,7 @@ export function useDocumentFiles({
               id: selectedFile.id,
               title: selectedFile.title,
               path: detail.output.path,
+              updated: detail.output.updated,
               files: {
                 main: selectedFile.mainFile?.path || null,
                 attachments: selectedFile.attachments.map(att => ({

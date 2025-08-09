@@ -3,6 +3,7 @@ import { PDFList } from './components/PDFList';
 import { DocumentFiles } from './components/document/DocumentFiles';
 import { PDFViewer } from './components/PDFViewer';
 import { Scale, Search, Minus, Square, X, Settings, HelpCircle, Info } from 'lucide-react';
+import { getFileNameWithoutExt } from './utils/fileUtils';
 
 export default function App() {
   const [files, setFiles] = useState([]);
@@ -40,26 +41,31 @@ export default function App() {
     try {
       setLoadError(null);
       const result = await window.ipcRenderer.invoke("loadCase", file.id);
+      console.log('loadCase response:', JSON.stringify(result, null, 2));
       
       if (!result || result.status !== 'success' || !result.case) return;
 
       if (!result.case.files) return;
 
+      // Get output path and updated timestamp from the normalized schema
+      const outputPath = typeof result.case.path === 'string' && result.case.path ? result.case.path : null;
+      const updatedDate = typeof result.case.updated === 'string' ? result.case.updated : undefined;
+
       const updatedFile = {
         id: file.id,
         title: result.case.title,
-        updated_date: result.case.updated_date,
+        updated_date: updatedDate,
         mainFile: result.case.files.main ? {
-          name: result.case.files.main.split('/').pop().replace(/\.[^/.]+$/, ''),
+          name: getFileNameWithoutExt(result.case.files.main),
           path: result.case.files.main
         } : null,
         attachments: result.case.files.attachments ? result.case.files.attachments.map(attachment => ({
           name: attachment.title,
           path: attachment.path
         })) : [],
-        outputFile: result.case.path ? {
-          name: result.case.path.split('/').pop().replace(/\.[^/.]+$/, ''),
-          path: result.case.path
+        outputFile: outputPath ? {
+          name: getFileNameWithoutExt(outputPath),
+          path: outputPath
         } : null
       };
 
@@ -102,15 +108,13 @@ export default function App() {
   };
 
   const handleAttachmentAdd = async (file) => {
-    if (selectedFile) {
-      const updatedFile = {
-        ...selectedFile,
-        attachments: [...selectedFile.attachments, file]
-      };
-
-      setFiles(prev => prev.map(f => f.id === selectedFile.id ? updatedFile : f));
-      setSelectedFile(updatedFile);
-    }
+    if (!selectedFile) return;
+    const updatedFile = {
+      ...selectedFile,
+      attachments: [...selectedFile.attachments, file]
+    };
+    setFiles(prev => prev.map(f => f.id === selectedFile.id ? updatedFile : f));
+    setSelectedFile(updatedFile);
   };
 
   const handleAttachmentRemove = async (index) => {

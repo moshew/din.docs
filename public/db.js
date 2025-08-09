@@ -61,13 +61,15 @@ function registerHandlers() {
   ipcMain.handle('loadCase', async (event, caseId) => {
     const caseData = getById(db.case, caseId) || { title: '', path: '', files: { main: '', attachments: [] } };
     const listData = getById(db.cases, caseId) || { title: '' };
+
     return {
       status: 'success',
       case: {
         id: caseId,
         title: listData.title,
-        path: caseData.path,
+        path: caseData.path || '',
         files: caseData.files,
+        updated: typeof caseData.updated === 'string' ? caseData.updated : undefined
       },
     };
   });
@@ -76,8 +78,11 @@ function registerHandlers() {
     console.log('saveCase');
     const current = getById(db.case, caseToSave.id);
     if (current) {
-      if (caseToSave.files) current.files = caseToSave.files;
+      if (caseToSave.files) {
+        current.files = caseToSave.files;
+      }
       if (typeof caseToSave.path === 'string') current.path = caseToSave.path;
+      if (typeof caseToSave.updated === 'string') current.updated = caseToSave.updated;
       if (typeof caseToSave.title === 'string') {
         current.title = caseToSave.title;
         const lc = getById(db.cases, caseToSave.id);

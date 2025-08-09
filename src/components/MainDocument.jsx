@@ -20,10 +20,9 @@ export function MainDocument({ mainFile, onMainFileSelect, onMainFileClick, drag
       };
 
        if (selectedFile) {
-        const result = await window.ipcRenderer.invoke("saveCase", {
+        await window.ipcRenderer.invoke("saveCase", {
           id: selectedFile.id,
           title: selectedFile.title,
-          path: selectedFile.outputFile?.path || '',
           files: {
             main: fileData.path,
             attachments: selectedFile.attachments.map(att => ({
@@ -32,10 +31,6 @@ export function MainDocument({ mainFile, onMainFileSelect, onMainFileClick, drag
             }))
           }
         });
-
-        if (result.updated_date) {
-          fileData.updated_date = result.updated_date;
-        }
       }
 
        onMainFileSelect(fileData);
@@ -66,7 +61,7 @@ export function MainDocument({ mainFile, onMainFileSelect, onMainFileClick, drag
           </div>
           <span
             className="text-sm text-[#323130] truncate text-right"
-            title={`${mainFile.name}\nנתיב: ${mainFile.path}${mainFile.updated_date ? `\nעודכן לאחרונה: ${new Date(mainFile.updated_date).toLocaleString('he-IL')}` : ''}`}
+            title={`${mainFile.name}\nנתיב: ${mainFile.path}`}
           >
             {truncateFileName(mainFile.name)}
           </span>
