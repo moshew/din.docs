@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
-import { FileText, Upload } from 'lucide-react';
+import { FileText, Upload, Loader2 } from 'lucide-react';
 import { usePDF, PDFDocument } from 'react-fast-scroll-pdf';
 
 // Fast PDF viewer styles - optimized for performance with width fit
@@ -73,19 +73,25 @@ const EmptyState = ({ message, subtitle, onSelect }) => (
   </div>
 );
 
-const ErrorState = ({ error, subtitle, onRetry }) => (
+const ErrorState = ({ error, subtitle, onRetry, loading }) => (
   <div className="h-full flex flex-col items-center justify-center bg-[#faf9f8] p-6">
-    <div className="p-4 bg-[#FDE7E9] rounded-full mb-4">
+    <div className="p-3 rounded-full border-2 border-[#F3B1B3] bg-white mb-4">
       <FileText className="w-12 h-12 text-[#A4262C]" />
     </div>
     <p className="text-xl font-medium text-[#323130] mb-2 text-center">{error}</p>
-    {subtitle && <p className="text-sm text-[#605e5c] mb-5 text-center">{subtitle}</p>}
+    {subtitle && (
+      <p className="text-sm text-[#605e5c] mb-5 text-center">
+        {subtitle}
+      </p>
+    )}
     {onRetry && (
       <button
         onClick={onRetry}
-        className="px-4 py-2 bg-[#0078d4] text-white rounded hover:bg-[#106ebe] transition-colors"
+        disabled={loading}
+        className="px-4 py-2 bg-[#0078d4] text-white rounded hover:bg-[#106ebe] disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
       >
-        נסה שוב
+        {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+        {loading ? 'מנסה שוב...' : 'נסה שוב'}
       </button>
     )}
   </div>
@@ -96,6 +102,7 @@ export function PDFViewer({ path, message, onFileSelect }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const urlRef = useRef(null);
+  const [retrySeq, setRetrySeq] = useState(0);
   // Advanced viewer is rendered lazily to avoid initializing the hook with null source
 
   // Debug logs removed for production
@@ -130,29 +137,77 @@ export function PDFViewer({ path, message, onFileSelect }) {
         // Load PDF data with timeout
         const pdfData = await Promise.race([
           window.ipcRenderer.invoke("getPdf", path),
-          new Promise((_, reject) => 
+          new Promise((_, reject) =>
             setTimeout(() => reject(new Error('PDF loading timeout')), 10000)
           )
         ]);
-        
-        if (!pdfData || !isMounted) return;
+
+        if (!isMounted) return;
+
+        // Handle non-binary responses from the main process
+        // getPdf may return objects like { result: 'docx' } or { result: 'notExists' }
+        if (!pdfData || (typeof pdfData === 'object' && !(pdfData instanceof ArrayBuffer) && !ArrayBuffer.isView(pdfData))) {
+          const resultTag = pdfData && pdfData.result;
+
+          if (resultTag === 'docx') {
+            // File opened externally; hide viewer without error
+            setPdfSource(null);
+            setLoading(false);
+            setError(null);
+            return;
+          }
+
+          if (resultTag === 'notExists') {
+            setPdfSource(null);
+            setLoading(false);
+            setError('הקובץ לא נמצא');
+            return;
+          }
+
+          if (resultTag === 'error') {
+            setPdfSource(null);
+            setLoading(false);
+            setError('שגיאה בקריאת הקובץ');
+            return;
+          }
+
+          // Unknown response shape
+          setPdfSource(null);
+          setLoading(false);
+          setError('נתונים לא תקינים עבור PDF');
+          return;
+        }
 
         // Clean up previous URL
         if (urlRef.current) {
           URL.revokeObjectURL(urlRef.current);
         }
 
-        // Create source for FastScrollPDF
-        
-        // FastScrollPDF accepts Uint8Array directly - no blob URL needed!
-        const sourceOptions = {
-          data: new Uint8Array(pdfData)
-        };
-        
+        // Ensure we provide a fresh, non-detached copy of the bytes
+        // This avoids DataCloneError when the viewer posts the data to a Worker
+        let bytes;
+        if (pdfData instanceof Uint8Array) {
+          bytes = pdfData.slice(0);
+        } else if (ArrayBuffer.isView(pdfData)) {
+          // e.g., Node Buffer or another TypedArray view
+          bytes = new Uint8Array(pdfData.buffer.slice(0));
+        } else if (pdfData instanceof ArrayBuffer) {
+          bytes = new Uint8Array(pdfData.slice(0));
+        } else {
+          // Fallback (should not happen given earlier guards)
+          bytes = Uint8Array.from(pdfData);
+        }
+
+        // Prefer blob URL to avoid structuredClone/transfer of ArrayBuffer in workers
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const objectUrl = URL.createObjectURL(blob);
+        urlRef.current = objectUrl;
+        const sourceOptions = { url: objectUrl };
+
         setPdfSource(sourceOptions);
         setLoading(false);
         setError(null);
-        
+
       } catch (error) {
         console.error('Error loading PDF:', error);
         
@@ -182,7 +237,7 @@ export function PDFViewer({ path, message, onFileSelect }) {
     return () => {
       isMounted = false;
     };
-  }, [path]);
+  }, [path, retrySeq]);
 
   // Clean up URL when component unmounts
   useEffect(() => {
@@ -271,9 +326,8 @@ export function PDFViewer({ path, message, onFileSelect }) {
       <ErrorState 
         error={error}
         subtitle="לא ניתן לגשת לקובץ PDF המבוקש או שהוא אינו קיים"
-        onRetry={() => {
-          window.location.reload();
-        }}
+        loading={loading}
+        onRetry={() => setRetrySeq((v) => v + 1)}
       />
     );
   }

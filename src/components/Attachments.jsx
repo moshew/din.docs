@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FileText, Plus, Pencil, Check, X, GripVertical, Trash2 } from 'lucide-react';
-import { truncateFileName, getFileNameWithoutExt } from '../utils/fileUtils';
+import { getFileNameWithoutExt } from '../utils/fileUtils';
 
 export function Attachments({ 
   selectedFile,
@@ -197,7 +197,7 @@ export function Attachments({
                 className="text-sm text-[#323130] truncate"
                 title={`${file.name}\nנתיב: ${file.path}`}
               >
-                {truncateFileName(file.name)}
+                {file.name}
               </span>
             )}
           </div>

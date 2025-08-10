@@ -1,6 +1,6 @@
 import React from 'react';
 import { FileText, Upload } from 'lucide-react';
-import { truncateFileName, getFileNameFromPath } from '../utils/fileUtils';
+import { getFileNameFromPath } from '../utils/fileUtils';
 
 export function MainDocument({ mainFile, onMainFileSelect, onMainFileClick, dragOver, disabled, selectedFile }) {
   const handleFileSelect = async (e) => {
@@ -63,7 +63,7 @@ export function MainDocument({ mainFile, onMainFileSelect, onMainFileClick, drag
             className="text-sm text-[#323130] truncate text-right"
             title={`${mainFile.name}\nנתיב: ${mainFile.path}`}
           >
-            {truncateFileName(mainFile.name)}
+            {mainFile.name}
           </span>
         </div>
         <div className="flex items-center mr-2 flex-shrink-0">

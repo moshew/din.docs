@@ -49,6 +49,13 @@ function createWindow() {
     }, 0);
   });
 
+  // Prevent leaving maximized state
+  try {
+    mainWindow.on('unmaximize', () => {
+      try { mainWindow.maximize(); } catch {}
+    });
+  } catch {}
+
   if (isDev) mainWindow.webContents.openDevTools({ mode: 'detach' });
   register(mainWindow);
 }

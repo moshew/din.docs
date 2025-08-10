@@ -142,9 +142,7 @@ export function register(mainWindow) {
 
   ipcMain.handle('window:maximize', () => {
     if (!mainWindow) return { status: 'error' };
-    if (mainWindow.isMaximized()) {
-      mainWindow.unmaximize();
-    } else {
+    if (!mainWindow.isMaximized()) {
       mainWindow.maximize();
     }
     return { status: 'success' };

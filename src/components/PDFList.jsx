@@ -158,9 +158,17 @@ export function PDFList({
           isEditMode ? 'pointer-events-none opacity-50' : ''
         }`}
       >
+        {isSelected && (
+          <div
+            className="absolute right-0 top-0 bottom-0 w-1.5 bg-[#0078d4]"
+            aria-hidden="true"
+          />
+        )}
         <button
           onClick={() => !isEditMode && !isEditing && onSelectFile(file)}
-          className="w-full px-4 py-2.5 flex items-start transition-colors duration-300 focus:outline-none"
+          className={`w-full py-2.5 flex items-start transition-colors duration-300 focus:outline-none px-4 ${
+            isEditing ? 'pl-16' : ''
+          }`}
           disabled={isEditMode}
           onBlur={(e) => {
             if (!e.currentTarget.contains(e.relatedTarget)) {
@@ -174,19 +182,22 @@ export function PDFList({
                 isSelected ? 'text-[#0078d4]' : 'text-[#605e5c] group-hover:text-[#0078d4]'
               } transition-colors duration-300`}
             />
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               {isEditing ? (
-                <input
-                  type="text"
-                  value={editedFileName}
-                  onChange={(e) => setEditedFileName(e.target.value)}
-                  onKeyDown={(e) => handleEditKeyDown(e, file)}
-                  className="w-full text-sm bg-transparent border-b border-[#0078d4] focus:outline-none px-1 text-right"
-                  autoFocus
-                  onClick={(e) => e.stopPropagation()}
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={editedFileName}
+                    onChange={(e) => setEditedFileName(e.target.value)}
+                    onKeyDown={(e) => handleEditKeyDown(e, file)}
+                    className="w-full text-sm bg-transparent focus:outline-none pl-5 text-right"
+                    autoFocus
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <div className="absolute right-0 left-5 bottom-0 h-px bg-[#0078d4] pointer-events-none" />
+                </div>
               ) : (
-                <p className="text-sm font-medium text-[#323130] truncate">
+                <p className="text-sm font-medium text-[#323130] truncate max-w-full">
                   {file.title}
                 </p>
               )}

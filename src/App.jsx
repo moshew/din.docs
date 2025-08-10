@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PDFList } from './components/PDFList';
 import { DocumentFiles } from './components/document/DocumentFiles';
 import { PDFViewer } from './components/PDFViewer';
-import { Scale, Search, Minus, Square, X, Settings, HelpCircle, Info } from 'lucide-react';
+import { Scale, Search, Minus, Square, X, Settings, HelpCircle } from 'lucide-react';
 import { getFileNameWithoutExt } from './utils/fileUtils';
 
 export default function App() {
@@ -204,11 +204,11 @@ export default function App() {
               <X className="w-4 h-4 text-[#323130] group-hover:text-white" />
             </button>
             <button
-              className="w-12 h-14 hover:bg-[#e1dfdd] transition-colors flex items-center justify-center"
-              title="הגדל"
-              onClick={() => window.ipcRenderer.invoke('window:maximize')}
+              className="w-12 h-14 transition-colors flex items-center justify-center opacity-50 cursor-not-allowed"
+              title="מוגדל"
+              disabled
             >
-              <Square className="w-4 h-4 text-[#323130]" />
+              <Square className="w-4 h-4 text-[#a0a0a0]" />
             </button>
             <button
               className="w-12 h-14 hover:bg-[#e1dfdd] transition-colors flex items-center justify-center"
@@ -275,13 +275,31 @@ export default function App() {
       </div>
 
       <div className="h-6 bg-[#EFF4F9] border-t border-[#e1dfdd] px-3 flex items-center justify-between text-xs text-[#323130]">
-        <div className="flex items-center space-x-4">
-          {selectedFile && (
-            <span className="flex items-center">
-              <Info className="w-3.5 h-3.5 mr-1.5" />
-              {`${selectedFile.title} - ${selectedFile.mainFile ? Math.round(selectedFile.mainFile.size / 1024) : 0} KB`}
-            </span>
-          )}
+        <div className="flex items-center space-x-4 min-w-0">
+          {selectedFile && (() => {
+            const path = selectedFile.mainFile?.path || selectedFile.outputFile?.path || '';
+            let updatedText = '';
+            try {
+              updatedText = selectedFile.updated_date
+                ? new Date(selectedFile.updated_date).toLocaleDateString('he-IL', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })
+                : '';
+            } catch (e) {
+              updatedText = '';
+            }
+            const sep = "\u00A0\u00A0•\u00A0\u00A0"; // wider, bold-like bullet with extra non-breaking spaces
+            const text = `${selectedFile.title}${sep}נתיב: ${path || '—'}${sep}עודכן לאחרונה: ${updatedText || '—'}`;
+            return (
+              <span className="min-w-0 truncate" title={text}>
+                <span className="truncate">{text}</span>
+              </span>
+            );
+          })()}
         </div>
         <div className="flex items-center space-x-3">
           <button
