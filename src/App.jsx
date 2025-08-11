@@ -79,8 +79,14 @@ export default function App() {
         return [...prev, updatedFile];
       });
       
+      // Avoid reloading PDF if same case and same output selected
+      const isSameCase = selectedFile?.id === file.id;
+      const isSameOutputPath = selectedPdf?.path && updatedFile.outputFile?.path && (selectedPdf.path === updatedFile.outputFile.path);
+
       setSelectedFile(updatedFile);
-      setSelectedPdf(updatedFile.outputFile);
+      if (!(isSameCase && isSameOutputPath)) {
+        setSelectedPdf(updatedFile.outputFile);
+      }
     } catch (error) {
       console.error('Failed to load case:', error);
     }
@@ -156,25 +162,31 @@ export default function App() {
     }
   };
 
-  const handleMainFileClick = (file) => {
-    if (file) {
-      setSelectedPdf(file);
-      if (file.updated_date && selectedFile) {
-        setFiles(prev => prev.map(f => f.id === selectedFile.id ? {
-          ...f,
-          updated_date: file.updated_date
-        } : f));
-      }
+  const handleMainFileClick = (file, options = {}) => {
+    if (!file) return;
+    const { force = false } = options;
+    // Prevent redundant reloads unless forced (e.g., after generation)
+    if (!force && selectedPdf?.path === file.path) return;
+
+    setSelectedPdf(file);
+    if (file.updated_date && selectedFile) {
+      setFiles(prev => prev.map(f => f.id === selectedFile.id ? {
+        ...f,
+        updated_date: file.updated_date
+      } : f));
     }
   };
 
   const handleAttachmentClick = (attachment) => {
+    if (!attachment) return;
+    // Prevent redundant reloads if clicking the same attachment again
+    if (selectedPdf?.path === attachment.path) return;
     setSelectedPdf(attachment);
   };
 
   return (
     <div className="h-screen flex flex-col bg-[#faf9f8]">
-      <div className="bg-[#EFF4F9] border-b border-[#e1dfdd] shadow-sm">
+      <div className="bg-[#F4F8FE] border-b border-[#e1dfdd] shadow-sm">
         <div className="h-14 flex items-center pl-0 pr-0 relative">
           {/* Icon anchored to the left */}
           <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center">
@@ -227,7 +239,7 @@ export default function App() {
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        <div className={`${sidebarWidth} bg-[#faf9f8] transition-[width] duration-150 ease-out overflow-hidden border-l border-[#e1dfdd]`}>
+        <div className={`${sidebarWidth} bg-[#EFF4F9] transition-[width] duration-150 ease-out overflow-hidden border-l border-[#e1dfdd]`}>
           <PDFList
             files={files.filter(file => 
               (file.title || '').toLowerCase().includes(searchQuery.toLowerCase())
@@ -273,49 +285,7 @@ export default function App() {
           </div>
         )}
       </div>
-
-      <div className="h-6 bg-[#EFF4F9] border-t border-[#e1dfdd] px-3 flex items-center justify-between text-xs text-[#323130]">
-        <div className="flex items-center space-x-4 min-w-0">
-          {selectedFile && (() => {
-            const path = selectedFile.mainFile?.path || selectedFile.outputFile?.path || '';
-            let updatedText = '';
-            try {
-              updatedText = selectedFile.updated_date
-                ? new Date(selectedFile.updated_date).toLocaleDateString('he-IL', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })
-                : '';
-            } catch (e) {
-              updatedText = '';
-            }
-            const sep = "\u00A0\u00A0•\u00A0\u00A0"; // wider, bold-like bullet with extra non-breaking spaces
-            const text = `${selectedFile.title}${sep}נתיב: ${path || '—'}${sep}עודכן לאחרונה: ${updatedText || '—'}`;
-            return (
-              <span className="min-w-0 truncate" title={text}>
-                <span className="truncate">{text}</span>
-              </span>
-            );
-          })()}
-        </div>
-        <div className="flex items-center space-x-3">
-          <button
-            className="p-1 hover:bg-[#e1dfdd] transition-colors"
-            title="הגדרות"
-          >
-            <Settings className="w-3.5 h-3.5 text-[#323130]" />
-          </button>
-          <button
-            className="p-1 hover:bg-[#e1dfdd] transition-colors"
-            title="עזרה"
-          >
-            <HelpCircle className="w-3.5 h-3.5 text-[#323130]" />
-          </button>
-        </div>
-      </div>
+      
     </div>
   );
 }

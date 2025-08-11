@@ -10,17 +10,77 @@ html, body, #root {
   direction: rtl;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  @apply w-2 h-2;
+/* Custom scrollbar per user spec - applied to .pdf-list-scroll and .scrollable-container */
+.pdf-list-scroll,
+.scrollable-container {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #004f8a #FBFDFF; /* darker thumb, same track */
+  scrollbar-gutter: stable; /* Reserve space; helps avoid overlay look */
 }
 
-::-webkit-scrollbar-track {
-  @apply bg-transparent;
+.pdf-list-scroll::-webkit-scrollbar,
+.scrollable-container::-webkit-scrollbar {
+  width: 12px; /* slimmer shows rounding better */
+  background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
-  @apply bg-[#c8c6c4] hover:bg-[#a19f9d] transition-colors;
+.pdf-list-scroll::-webkit-scrollbar-track,
+.scrollable-container::-webkit-scrollbar-track {
+  background: #FBFDFF; /* Match list background */
+  border-radius: 9999px;
+  margin-block: 8px; /* space so thumb ends stay visibly rounded */
+}
+
+.pdf-list-scroll::-webkit-scrollbar-thumb,
+.scrollable-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #005a9e 0%, #004f8a 100%);
+  border-radius: 9999px; /* fully rounded ends */
+  border: 4px solid transparent; /* use transparent border to preserve radius */
+  background-clip: content-box; /* ensures rounded corners are visible */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* Explicit vertical/horizontal to increase reliability across Chromium versions */
+.pdf-list-scroll::-webkit-scrollbar-thumb:vertical,
+.scrollable-container::-webkit-scrollbar-thumb:vertical {
+  border-radius: 9999px;
+}
+.pdf-list-scroll::-webkit-scrollbar-thumb:horizontal,
+.scrollable-container::-webkit-scrollbar-thumb:horizontal {
+  border-radius: 9999px;
+}
+
+.pdf-list-scroll::-webkit-scrollbar-thumb:hover,
+.scrollable-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #004f8a 0%, #00457a 100%);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.pdf-list-scroll::-webkit-scrollbar-thumb:active,
+.scrollable-container::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #003a6d 0%, #003058 100%);
+}
+
+/* Hide default buttons to avoid squared edges at ends */
+.pdf-list-scroll::-webkit-scrollbar-button,
+.scrollable-container::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* no hover styles since buttons are hidden */
+
+/* no active styles since buttons are hidden */
+
+/* remove custom arrow icons */
+
+/* remove custom arrow icons */
+
+/* Corner when both scrollbars show */
+.pdf-list-scroll::-webkit-scrollbar-corner,
+.scrollable-container::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Animation for loading spinner */

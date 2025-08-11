@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useLayoutEffect, memo } from 'react';
 import { FileText, Upload, Loader2 } from 'lucide-react';
 import { usePDF, PDFDocument } from 'react-fast-scroll-pdf';
 
@@ -97,12 +97,77 @@ const ErrorState = ({ error, subtitle, onRetry, loading }) => (
   </div>
 );
 
-export function PDFViewer({ path, message, onFileSelect }) {
+// Stable, memoized advanced viewer component to avoid remounting on parent re-renders
+const AdvancedViewer = memo(function AdvancedViewer({ source }) {
+  const scrollContainerRef = useRef(null);
+  const viewerRef = useRef(null);
+  const hasFitRef = useRef(false);
+  const [isReady, setIsReady] = useState(false);
+
+  const {
+    pages,
+    changeZoomStart,
+    changeZoomEnd,
+    renderCurrentPage,
+    viewportWidth,
+  } = usePDF({
+    source,
+    scrollContainer: scrollContainerRef.current,
+    viewer: viewerRef.current,
+  });
+
+  const fitToWidth = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container || !viewportWidth) return;
+    const scale = (container.clientWidth / viewportWidth) * 0.98;
+    if (!Number.isFinite(scale) || scale <= 0) return;
+    changeZoomStart(scale);
+    const t = setTimeout(() => changeZoomEnd(), 0);
+    return () => clearTimeout(t);
+  }, [viewportWidth, changeZoomStart, changeZoomEnd]);
+
+  useLayoutEffect(() => {
+    if (hasFitRef.current) {
+      if (!isReady) setIsReady(true);
+      return;
+    }
+    if (!source || !viewportWidth) return;
+    fitToWidth();
+    hasFitRef.current = true;
+    const id = requestAnimationFrame(() => setIsReady(true));
+    return () => cancelAnimationFrame(id);
+  }, [fitToWidth, source, viewportWidth, isReady]);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return undefined;
+    const onScroll = () => renderCurrentPage();
+    container.addEventListener('scroll', onScroll);
+    return () => container.removeEventListener('scroll', onScroll);
+  }, [renderCurrentPage]);
+
+  return (
+    <div className="h-full w-full flex flex-col">
+      <div
+        ref={scrollContainerRef}
+        className="h-full w-full overflow-auto"
+        style={{ height: '100%', visibility: isReady ? 'visible' : 'hidden' }}
+      >
+        <div ref={viewerRef} className="w-full fast-pdf-viewer">
+          <PDFDocument pages={pages} />
+        </div>
+      </div>
+    </div>
+  );
+});
+
+export const PDFViewer = memo(function PDFViewer({ path, message, onFileSelect }) {
   const [pdfSource, setPdfSource] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const urlRef = useRef(null);
   const [retrySeq, setRetrySeq] = useState(0);
+  const lastPathRef = useRef(null);
   // Advanced viewer is rendered lazily to avoid initializing the hook with null source
 
   // Debug logs removed for production
@@ -124,7 +189,13 @@ export function PDFViewer({ path, message, onFileSelect }) {
           setPdfSource(null);
           setError(null);
           setLoading(false);
+          lastPathRef.current = null;
         }
+        return;
+      }
+
+      // Skip reload if the same path is already loaded
+      if (lastPathRef.current === path && pdfSource) {
         return;
       }
 
@@ -207,6 +278,7 @@ export function PDFViewer({ path, message, onFileSelect }) {
         setPdfSource(sourceOptions);
         setLoading(false);
         setError(null);
+        lastPathRef.current = path;
 
       } catch (error) {
         console.error('Error loading PDF:', error);
@@ -344,4 +416,4 @@ export function PDFViewer({ path, message, onFileSelect }) {
       )}
     </div>
   );
-}
+});

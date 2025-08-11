@@ -55,7 +55,7 @@ export function DocumentFiles({
           name: detail.file.name,
           path: detail.file.path,
           url: detail.file.url
-        });
+        }, { force: true });
       }
       
       setTimeout(() => {

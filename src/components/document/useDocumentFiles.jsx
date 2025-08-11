@@ -71,7 +71,7 @@ export function useDocumentFiles({
               path: detail.output.path,
               url: detail.output.url,
               updated_date: detail.output.updated
-            });
+            }, { force: true });
           }
         }
       } catch (error) {

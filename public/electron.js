@@ -1,6 +1,16 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { app, BrowserWindow, screen } from 'electron';
+
+// Ensure classic (non-overlay) scrollbars so CSS ::-webkit-scrollbar styles apply consistently
+// Must be set before the app is ready
+try {
+  // Disable overlay scrollbars and related flash behaviors
+  app.commandLine.appendSwitch(
+    'disable-features',
+    'OverlayScrollbar,OverlayScrollbarFlashAfterAnyScrollUpdate,OverlayScrollbarFlashWhenMouseEnter'
+  );
+} catch {}
 import Splashscreen from '@trodi/electron-splashscreen';
 import isDev from 'electron-is-dev';
 import { register } from './ipcHandler.js';

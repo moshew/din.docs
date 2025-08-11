@@ -1,41 +1,7 @@
 import React, { useState } from 'react';
-import { FileText, Trash2, Plus, Check, X, Pencil } from 'lucide-react';
+import { Trash2, Plus, Check, X, Pencil } from 'lucide-react';
 
-// Add custom CSS for right-side scrollbar using transform
-const scrollbarStyles = `
-  .scrollbar-right {
-    transform: rotateY(180deg);
-  }
-  
-  .scrollbar-right > .scroll-content {
-    transform: rotateY(180deg);
-  }
-  
-  .scrollbar-right::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  .scrollbar-right::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-  }
-  
-  .scrollbar-right::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 4px;
-  }
-  
-  .scrollbar-right::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-  }
-`;
 
-// Insert the styles into the document head
-if (typeof document !== 'undefined') {
-  const style = document.createElement('style');
-  style.textContent = scrollbarStyles;
-  document.head.appendChild(style);
-}
 
 export function PDFList({ 
   files, 
@@ -154,7 +120,7 @@ export function PDFList({
     
     return (
       <div
-        className={`group relative hover:bg-[#e1dfdd] ${isSelected ? 'bg-[#e5f1fb] hover:bg-[#e5f1fb]' : ''} ${
+        className={`group relative hover:bg-[#f5f8ff] ${isSelected ? 'bg-[#d7e9fa] hover:bg-[#d7e9fa]' : ''} ${
           isEditMode ? 'pointer-events-none opacity-50' : ''
         }`}
       >
@@ -165,7 +131,12 @@ export function PDFList({
           />
         )}
         <button
-          onClick={() => !isEditMode && !isEditing && onSelectFile(file)}
+          onClick={() => {
+            if (isEditMode || isEditing) return;
+            // Avoid reloading when clicking the already selected case
+            if (selectedFile?.id === file.id) return;
+            onSelectFile(file);
+          }}
           className={`w-full py-2.5 flex items-start transition-colors duration-300 focus:outline-none px-4 ${
             isEditing ? 'pl-16' : ''
           }`}
@@ -177,11 +148,6 @@ export function PDFList({
           }}
         >
           <div className="flex-1 min-w-0 text-right flex items-start">
-            <FileText
-              className={`flex-shrink-0 w-5 h-5 mt-1 ml-3 ${
-                isSelected ? 'text-[#0078d4]' : 'text-[#605e5c] group-hover:text-[#0078d4]'
-              } transition-colors duration-300`}
-            />
             <div className="flex-1 min-w-0">
               {isEditing ? (
                 <div className="relative">
@@ -190,11 +156,11 @@ export function PDFList({
                     value={editedFileName}
                     onChange={(e) => setEditedFileName(e.target.value)}
                     onKeyDown={(e) => handleEditKeyDown(e, file)}
-                    className="w-full text-sm bg-transparent focus:outline-none pl-5 text-right"
+                    className="w-full text-sm bg-transparent focus:outline-none text-right"
                     autoFocus
                     onClick={(e) => e.stopPropagation()}
                   />
-                  <div className="absolute right-0 left-5 bottom-0 h-px bg-[#0078d4] pointer-events-none" />
+                  <div className="absolute right-0 left-0 bottom-0 h-px bg-[#0078d4] pointer-events-none" />
                 </div>
               ) : (
                 <p className="text-sm font-medium text-[#323130] truncate max-w-full">
@@ -250,14 +216,14 @@ export function PDFList({
           <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
             <button
               onClick={(e) => handleEditClick(file, e)}
-              className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-[#e1dfdd] transition-all duration-500 focus:outline-none focus:ring-2 focus:ring-[#0078d4] focus:opacity-100"
+              className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-[#e9f2fc] transition-all duration-500 focus:outline-none focus:ring-2 focus:ring-[#0078d4] focus:opacity-100"
               title="ערוך שם מסמך"
             >
               <Pencil className="w-4 h-4 text-[#0078d4]" />
             </button>
             <button
               onClick={(e) => handleDeleteClick(file.id, e)}
-              className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-[#e1dfdd] transition-all duration-500 focus:outline-none focus:ring-2 focus:ring-[#0078d4] focus:opacity-100"
+              className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-[#e9f2fc] transition-all duration-500 focus:outline-none focus:ring-2 focus:ring-[#0078d4] focus:opacity-100"
               title="מחק מסמך"
             >
               <Trash2 className="w-4 h-4 text-[#a4262c]" />
@@ -272,10 +238,9 @@ export function PDFList({
   const reversedFiles = [...files].reverse();
 
   return (
-    <div className="h-full flex flex-col bg-[#faf9f8]">
-      <div className="flex-1 overflow-y-auto scrollbar-right">
-        <div className="scroll-content">
-          <div className="px-3 py-2 sticky top-0 bg-[#faf9f8] z-10">
+    <div className="h-full flex flex-col bg-[#FBFDFF]">
+      <div className="flex-1 overflow-y-auto pdf-list-scroll pr-1">
+          <div className="px-3 py-2 sticky top-0 bg-[#FBFDFF] z-10">
             {isAddingNew ? (
               <div className="flex items-center gap-1">
                 <input
@@ -312,27 +277,28 @@ export function PDFList({
                 </button>
               </div>
             ) : (
-              <button
-                onClick={() => !isEditMode && setIsAddingNew(true)}
-                disabled={isEditMode}
-                className={`w-3/4 mx-auto flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors duration-300 ${
-                  isEditMode 
-                    ? 'bg-transparent text-[#a19f9d] cursor-not-allowed opacity-50'
-                    : 'bg-[#0078d4] text-white hover:bg-[#106ebe] focus:outline-none focus:ring-2 focus:ring-[#0078d4] focus:ring-offset-2'
-                }`}
-              >
-                <Plus className="w-4 h-4" />
-                מסמך חדש
-              </button>
+              <div className="flex justify-start -mr-1.5">
+                <button
+                  onClick={() => !isEditMode && setIsAddingNew(true)}
+                  disabled={isEditMode}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-300 ${
+                    isEditMode 
+                      ? 'bg-transparent text-[#a19f9d] cursor-not-allowed opacity-50'
+                      : 'bg-[#0078d4] text-white hover:bg-[#106ebe] focus:outline-none focus:ring-2 focus:ring-[#0078d4] focus:ring-offset-2'
+                  }`}
+                >
+                  <Plus className="w-4 h-4" />
+                  מסמך חדש
+                </button>
+              </div>
             )}
           </div>
-          <div className="pb-1">
+          <div className="pb-1 divide-y divide-[#eaeaea]">
             {reversedFiles.map(file => (
               <FileItem key={file.id} file={file} />
             ))}
-          </div>
-        </div>
-      </div>
-    </div>
+                     </div>
+       </div>
+     </div>
   );
 }
