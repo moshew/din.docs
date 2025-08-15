@@ -1,5 +1,4 @@
 import React from 'react';
-import { Header } from './Header';
 import { Content } from './Content';
 import { Footer } from './Footer';
 import { FileCheckModal } from '../FileCheckModal';
@@ -29,8 +28,6 @@ export function DocumentFiles({
 
   return (
     <div className="h-full flex flex-col">
-      <Header title={selectedFile?.title} />
-
       <Content
         selectedFile={selectedFile}
         onMainFileSelect={onMainFileSelect}

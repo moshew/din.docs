@@ -2,54 +2,51 @@ import React, { useState, useEffect, useRef, useCallback, useLayoutEffect, memo 
 import { FileText, Upload, Loader2 } from 'lucide-react';
 import { usePDF, PDFDocument } from 'react-fast-scroll-pdf';
 
-// Fast PDF viewer styles - optimized for performance with width fit
+// Minimal viewer styles (layout only). Scrollbar styling is centralized in index.css
 const pdfViewerStyles = `
-  .fast-pdf-container {
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-  }
-
-  .fast-pdf-container::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  .fast-pdf-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-  }
-  
-  .fast-pdf-container::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 4px;
-  }
-  
-  .fast-pdf-container::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-  }
-
   .fast-pdf-viewer {
     width: 100%;
-    height: 100%;
+    overflow: visible;
+    padding: 0 8px;
+  }
+
+  .fast-pdf-viewer * {
+    overflow: visible !important;
   }
 
   .fast-pdf-viewer canvas {
+    width: 100% !important;
     max-width: 100%;
     height: auto;
+    display: block;
+    margin-bottom: 8px;
   }
 
   .fast-pdf-viewer div[data-page] {
+    width: 100%;
     max-width: 100%;
-    margin: 0 auto;
+    margin: 0 0 8px 0;
+  }
+
+  /* Hide any inner scrollbars from PDF library */
+  .fast-pdf-viewer *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
   }
 `;
 
-// Insert the styles into the document head
-if (typeof document !== 'undefined' && !document.querySelector('#pdf-viewer-styles')) {
-  const style = document.createElement('style');
-  style.id = 'pdf-viewer-styles';
-  style.textContent = pdfViewerStyles;
-  document.head.appendChild(style);
+// Insert or update the styles in the document head (ensures hot reload updates)
+if (typeof document !== 'undefined') {
+  const existing = document.querySelector('#pdf-viewer-styles');
+  if (existing) {
+    existing.textContent = pdfViewerStyles;
+  } else {
+    const style = document.createElement('style');
+    style.id = 'pdf-viewer-styles';
+    style.textContent = pdfViewerStyles;
+    document.head.appendChild(style);
+  }
 }
 
 const EmptyState = ({ message, subtitle, onSelect }) => (
@@ -99,10 +96,10 @@ const ErrorState = ({ error, subtitle, onRetry, loading }) => (
 
 // Stable, memoized advanced viewer component to avoid remounting on parent re-renders
 const AdvancedViewer = memo(function AdvancedViewer({ source }) {
-  const scrollContainerRef = useRef(null);
-  const viewerRef = useRef(null);
   const hasFitRef = useRef(false);
   const [isReady, setIsReady] = useState(false);
+  const [scrollEl, setScrollEl] = useState(null);
+  const [viewerEl, setViewerEl] = useState(null);
 
   const {
     pages,
@@ -112,48 +109,48 @@ const AdvancedViewer = memo(function AdvancedViewer({ source }) {
     viewportWidth,
   } = usePDF({
     source,
-    scrollContainer: scrollContainerRef.current,
-    viewer: viewerRef.current,
+    scrollContainer: scrollEl,
+    viewer: viewerEl,
   });
 
   const fitToWidth = useCallback(() => {
-    const container = scrollContainerRef.current;
-    if (!container || !viewportWidth) return;
-    const scale = (container.clientWidth / viewportWidth) * 0.98;
+    if (!scrollEl || !viewportWidth) return;
+    // Use more available width - account for scrollbar width (12px) and small margin
+    const availableWidth = scrollEl.clientWidth - 16; // 12px scrollbar + 4px margin
+    const scale = availableWidth / viewportWidth;
     if (!Number.isFinite(scale) || scale <= 0) return;
     changeZoomStart(scale);
     const t = setTimeout(() => changeZoomEnd(), 0);
     return () => clearTimeout(t);
-  }, [viewportWidth, changeZoomStart, changeZoomEnd]);
+  }, [viewportWidth, changeZoomStart, changeZoomEnd, scrollEl]);
 
   useLayoutEffect(() => {
     if (hasFitRef.current) {
       if (!isReady) setIsReady(true);
       return;
     }
-    if (!source || !viewportWidth) return;
+    if (!source || !viewportWidth || !scrollEl) return;
     fitToWidth();
     hasFitRef.current = true;
     const id = requestAnimationFrame(() => setIsReady(true));
     return () => cancelAnimationFrame(id);
-  }, [fitToWidth, source, viewportWidth, isReady]);
+  }, [fitToWidth, source, viewportWidth, isReady, scrollEl]);
 
   useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return undefined;
+    if (!scrollEl) return undefined;
     const onScroll = () => renderCurrentPage();
-    container.addEventListener('scroll', onScroll);
-    return () => container.removeEventListener('scroll', onScroll);
-  }, [renderCurrentPage]);
+    scrollEl.addEventListener('scroll', onScroll);
+    return () => scrollEl.removeEventListener('scroll', onScroll);
+  }, [renderCurrentPage, scrollEl]);
 
   return (
-    <div className="h-full w-full flex flex-col">
+    <div className="h-full w-full flex flex-col min-h-0">
       <div
-        ref={scrollContainerRef}
-        className="h-full w-full overflow-auto"
+        ref={setScrollEl}
+        className="h-full w-full overflow-y-auto overflow-x-hidden pdf-list-scroll"
         style={{ height: '100%', visibility: isReady ? 'visible' : 'hidden' }}
       >
-        <div ref={viewerRef} className="w-full fast-pdf-viewer">
+        <div ref={setViewerEl} className="w-full fast-pdf-viewer">
           <PDFDocument pages={pages} />
         </div>
       </div>
@@ -321,71 +318,7 @@ export const PDFViewer = memo(function PDFViewer({ path, message, onFileSelect }
     };
   }, []);
 
-  // Local advanced viewer component to safely use the hook only when source exists
-  const AdvancedViewer = ({ source }) => {
-    const scrollContainerRef = useRef(null);
-    const viewerRef = useRef(null);
-    const hasFitRef = useRef(false);
-    const [isReady, setIsReady] = useState(false);
-
-    const {
-      pages,
-      changeZoomStart,
-      changeZoomEnd,
-      renderCurrentPage,
-      viewportWidth,
-    } = usePDF({
-      source,
-      scrollContainer: scrollContainerRef.current,
-      viewer: viewerRef.current,
-    });
-
-    const fitToWidth = useCallback(() => {
-      const container = scrollContainerRef.current;
-      if (!container || !viewportWidth) return;
-      const scale = (container.clientWidth / viewportWidth) * 0.98;
-      if (!Number.isFinite(scale) || scale <= 0) return;
-      changeZoomStart(scale);
-      const t = setTimeout(() => changeZoomEnd(), 0);
-      return () => clearTimeout(t);
-    }, [viewportWidth, changeZoomStart, changeZoomEnd]);
-
-    // Run fit before paint to avoid visible flicker
-    useLayoutEffect(() => {
-      if (hasFitRef.current) {
-        if (!isReady) setIsReady(true);
-        return;
-      }
-      if (!source || !viewportWidth) return;
-      fitToWidth();
-      hasFitRef.current = true;
-      // reveal on next frame after zoom applied
-      const id = requestAnimationFrame(() => setIsReady(true));
-      return () => cancelAnimationFrame(id);
-    }, [fitToWidth, source, viewportWidth, isReady]);
-
-    useEffect(() => {
-      const container = scrollContainerRef.current;
-      if (!container) return undefined;
-      const onScroll = () => renderCurrentPage();
-      container.addEventListener('scroll', onScroll);
-      return () => container.removeEventListener('scroll', onScroll);
-    }, [renderCurrentPage]);
-
-    return (
-      <div className="h-full w-full flex flex-col">
-        <div
-          ref={scrollContainerRef}
-          className="h-full w-full overflow-auto"
-          style={{ height: '100%', visibility: isReady ? 'visible' : 'hidden' }}
-        >
-          <div ref={viewerRef} className="w-full fast-pdf-viewer">
-            <PDFDocument pages={pages} />
-          </div>
-        </div>
-      </div>
-    );
-  };
+  // (Removed local AdvancedViewer shadowing to avoid confusion)
 
 
   // Show loading/error states when needed, otherwise show PDF
@@ -410,7 +343,7 @@ export const PDFViewer = memo(function PDFViewer({ path, message, onFileSelect }
 
   // Render advanced viewer with automatic width fit on open
   return (
-    <div className="h-full w-full bg-[#faf9f8] fast-pdf-container">
+    <div className="h-full w-full bg-[#faf9f8] flex flex-col min-h-0">
       {pdfSource && (
         <AdvancedViewer source={pdfSource} />
       )}

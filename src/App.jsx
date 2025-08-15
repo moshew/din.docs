@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PDFList } from './components/PDFList';
 import { DocumentFiles } from './components/document/DocumentFiles';
 import { PDFViewer } from './components/PDFViewer';
+import { Workspace } from './components/Workspace';
 import { Scale, Search, Minus, Square, X, Settings, HelpCircle } from 'lucide-react';
 import { getFileNameWithoutExt } from './utils/fileUtils';
 
@@ -201,7 +202,7 @@ export default function App() {
                 placeholder="חפש מסמכים..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-9 pl-9 pr-4 bg-[#faf9f8] border border-[#e1dfdd] text-sm text-[#323130] placeholder-[#616161] focus:outline-none focus:bg-white focus:border-[#0078d4] transition-colors"
+                className="w-full h-9 pl-9 pr-4 bg-[#FBFDFF] border border-[#e1dfdd] text-sm text-[#323130] placeholder-[#616161] focus:outline-none focus:bg-white focus:border-[#0078d4] transition-colors"
               />
             </div>
           </div>
@@ -238,7 +239,7 @@ export default function App() {
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden bg-[#AFAFAF] min-h-0">
         <div className={`${sidebarWidth} bg-[#EFF4F9] transition-[width] duration-150 ease-out overflow-hidden border-l border-[#e1dfdd]`}>
           <PDFList
             files={files.filter(file => 
@@ -254,7 +255,7 @@ export default function App() {
           />
         </div>
         {!selectedFile ? (
-          <div className="flex-1 bg-white border-l border-[#e1dfdd] overflow-hidden transition-all duration-150 ease-out">
+          <div className="flex-1 bg-white border-l border-[#e1dfdd] overflow-hidden transition-all duration-150 ease-out min-h-0 flex flex-col">
             <PDFViewer
               path={null}
               message="לא נבחר מסמך"
@@ -262,27 +263,18 @@ export default function App() {
             />
           </div>
         ) : (
-          <div className="flex-1 flex overflow-hidden">
-            <div className="w-1/3 bg-white border-l border-[#e1dfdd] overflow-hidden transition-all duration-150 ease-out">
-              <DocumentFiles
-                selectedFile={selectedFile}
-                onMainFileSelect={handleMainFileSelect}
-                onAttachmentAdd={handleAttachmentAdd}
-                onAttachmentRemove={handleAttachmentRemove}
-                onAttachmentReorder={handleAttachmentReorder}
-                onMainFileClick={handleMainFileClick}
-                onAttachmentClick={handleAttachmentClick}
-                isEditMode={isEditMode}
-                setIsEditMode={setIsEditMode}
-              />
-            </div>
-            <div className="w-2/3 bg-white border-l border-[#e1dfdd] overflow-hidden transition-all duration-150 ease-out">
-              <PDFViewer
-                path={selectedPdf?.path || null}
-                message={!selectedPdf && selectedFile ? 'לא נבחר קובץ לצפייה' : null}
-              />
-            </div>
-          </div>
+          <Workspace
+            selectedFile={selectedFile}
+            selectedPdf={selectedPdf}
+            onMainFileSelect={handleMainFileSelect}
+            onAttachmentAdd={handleAttachmentAdd}
+            onAttachmentRemove={handleAttachmentRemove}
+            onAttachmentReorder={handleAttachmentReorder}
+            onMainFileClick={handleMainFileClick}
+            onAttachmentClick={handleAttachmentClick}
+            isEditMode={isEditMode}
+            setIsEditMode={setIsEditMode}
+          />
         )}
       </div>
       

@@ -120,7 +120,7 @@ export function PDFList({
     
     return (
       <div
-        className={`group relative hover:bg-[#f5f8ff] ${isSelected ? 'bg-[#d7e9fa] hover:bg-[#d7e9fa]' : ''} ${
+        className={`group relative hover:bg-[#f5f8ff] ${isSelected ? 'bg-[#d7e9fa] hover:bg-[#cbe4f7]' : ''} ${
           isEditMode ? 'pointer-events-none opacity-50' : ''
         }`}
       >
@@ -137,8 +137,8 @@ export function PDFList({
             if (selectedFile?.id === file.id) return;
             onSelectFile(file);
           }}
-          className={`w-full py-2.5 flex items-start transition-colors duration-300 focus:outline-none px-4 ${
-            isEditing ? 'pl-16' : ''
+          className={`w-full py-2.5 flex items-start transition-colors duration-150 focus:outline-none px-4 pl-16 ${
+            isEditing ? 'pl-20' : ''
           }`}
           disabled={isEditMode}
           onBlur={(e) => {
@@ -181,14 +181,14 @@ export function PDFList({
           <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center space-x-1 bg-white shadow-md px-2 py-1">
             <button
               onClick={(e) => handleSaveEdit(file, e)}
-              className="p-1 hover:bg-[#f3f2f1] transition-colors"
+              className="p-1 hover:bg-[#f3f2f1] transition-colors focus:outline-none"
               title="שמור שינויים"
             >
               <Check className="w-4 h-4 text-[#0078d4]" />
             </button>
             <button
               onClick={handleCancelEdit}
-              className="p-1 hover:bg-[#f3f2f1] transition-colors"
+              className="p-1 hover:bg-[#f3f2f1] transition-colors focus:outline-none"
               title="בטל"
             >
               <X className="w-4 h-4 text-[#a4262c]" />
@@ -199,31 +199,33 @@ export function PDFList({
             <span className="text-xs text-[#323130] ml-2">למחוק?</span>
             <button
               onClick={handleConfirmDelete}
-              className="p-1 hover:bg-[#f3f2f1] transition-colors"
+              className="p-1 hover:bg-[#f3f2f1] transition-colors focus:outline-none"
               title="אשר מחיקה"
             >
               <Check className="w-4 h-4 text-[#0078d4]" />
             </button>
             <button
               onClick={handleCancelDelete}
-              className="p-1 hover:bg-[#f3f2f1] transition-colors"
+              className="p-1 hover:bg-[#f3f2f1] transition-colors focus:outline-none"
               title="בטל"
             >
               <X className="w-4 h-4 text-[#a4262c]" />
             </button>
           </div>
-        ) : !isEditMode && (
-          <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
+        ) : null}
+        
+        {!isEditMode && !isConfirmingDelete && !isEditing && (
+          <div className="absolute left-0 top-0 bottom-0 flex items-center">
             <button
               onClick={(e) => handleEditClick(file, e)}
-              className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-[#e9f2fc] transition-all duration-500 focus:outline-none focus:ring-2 focus:ring-[#0078d4] focus:opacity-100"
+              className="h-full px-1.5 opacity-0 group-hover:opacity-100 hover:bg-[#e9f2fc] transition-opacity duration-200 focus:outline-none focus:opacity-100 flex items-center"
               title="ערוך שם מסמך"
             >
               <Pencil className="w-4 h-4 text-[#0078d4]" />
             </button>
             <button
               onClick={(e) => handleDeleteClick(file.id, e)}
-              className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-[#e9f2fc] transition-all duration-500 focus:outline-none focus:ring-2 focus:ring-[#0078d4] focus:opacity-100"
+              className="h-full px-1.5 opacity-0 group-hover:opacity-100 hover:bg-[#ffebee] transition-opacity duration-200 focus:outline-none focus:opacity-100 flex items-center"
               title="מחק מסמך"
             >
               <Trash2 className="w-4 h-4 text-[#a4262c]" />
@@ -239,7 +241,7 @@ export function PDFList({
 
   return (
     <div className="h-full flex flex-col bg-[#FBFDFF]">
-      <div className="flex-1 overflow-y-auto pdf-list-scroll pr-1">
+      <div className="flex-1 overflow-y-scroll overflow-x-hidden pdf-list-scroll pr-1">
           <div className="px-3 py-2 sticky top-0 bg-[#FBFDFF] z-10">
             {isAddingNew ? (
               <div className="flex items-center gap-1">
