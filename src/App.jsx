@@ -82,10 +82,13 @@ export default function App() {
       
       // Avoid reloading PDF if same case and same output selected
       const isSameCase = selectedFile?.id === file.id;
-      const isSameOutputPath = selectedPdf?.path && updatedFile.outputFile?.path && (selectedPdf.path === updatedFile.outputFile.path);
+      const currentOutputPath = selectedPdf?.path;
+      const newOutputPath = updatedFile.outputFile?.path;
+      const isSameOutputPath = currentOutputPath && newOutputPath && (currentOutputPath === newOutputPath);
 
       setSelectedFile(updatedFile);
-      if (!(isSameCase && isSameOutputPath)) {
+      // Only update selectedPdf if we have a different output file or no current selection
+      if (!isSameCase || !isSameOutputPath) {
         setSelectedPdf(updatedFile.outputFile);
       }
     } catch (error) {

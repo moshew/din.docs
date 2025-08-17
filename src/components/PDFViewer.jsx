@@ -50,7 +50,7 @@ if (typeof document !== 'undefined') {
 }
 
 const EmptyState = ({ message, subtitle, onSelect }) => (
-  <div className="h-full flex flex-col items-center justify-center bg-[#faf9f8] p-6">
+  <div className="h-full flex flex-col items-center justify-center bg-white p-6">
     <FileText className="w-16 h-16 text-[#c8c6c4] mb-6" />
     <p className="text-xl font-medium text-[#323130] mb-3 text-center">
       {message || 'לא נבחר מסמך'}
@@ -71,10 +71,8 @@ const EmptyState = ({ message, subtitle, onSelect }) => (
 );
 
 const ErrorState = ({ error, subtitle, onRetry, loading }) => (
-  <div className="h-full flex flex-col items-center justify-center bg-[#faf9f8] p-6">
-    <div className="p-3 rounded-full border-2 border-[#F3B1B3] bg-white mb-4">
-      <FileText className="w-12 h-12 text-[#A4262C]" />
-    </div>
+  <div className="h-full flex flex-col items-center justify-center bg-white p-6">
+    <FileText className="w-16 h-16 text-[#d4d4d4] mb-6" />
     <p className="text-xl font-medium text-[#323130] mb-2 text-center">{error}</p>
     {subtitle && (
       <p className="text-sm text-[#605e5c] mb-5 text-center">
@@ -95,11 +93,12 @@ const ErrorState = ({ error, subtitle, onRetry, loading }) => (
 );
 
 // Stable, memoized advanced viewer component to avoid remounting on parent re-renders
-const AdvancedViewer = memo(function AdvancedViewer({ source }) {
+const AdvancedViewer = memo(function AdvancedViewer({ source, sourceKey }) {
   const hasFitRef = useRef(false);
   const [isReady, setIsReady] = useState(false);
   const [scrollEl, setScrollEl] = useState(null);
   const [viewerEl, setViewerEl] = useState(null);
+  const currentSourceKeyRef = useRef(null);
 
   const {
     pages,
@@ -125,6 +124,13 @@ const AdvancedViewer = memo(function AdvancedViewer({ source }) {
   }, [viewportWidth, changeZoomStart, changeZoomEnd, scrollEl]);
 
   useLayoutEffect(() => {
+    // Reset hasFitRef when source changes to ensure proper fitting for new documents
+    if (currentSourceKeyRef.current !== sourceKey) {
+      hasFitRef.current = false;
+      setIsReady(false);
+      currentSourceKeyRef.current = sourceKey;
+    }
+    
     if (hasFitRef.current) {
       if (!isReady) setIsReady(true);
       return;
@@ -134,7 +140,7 @@ const AdvancedViewer = memo(function AdvancedViewer({ source }) {
     hasFitRef.current = true;
     const id = requestAnimationFrame(() => setIsReady(true));
     return () => cancelAnimationFrame(id);
-  }, [fitToWidth, source, viewportWidth, isReady, scrollEl]);
+  }, [fitToWidth, source, sourceKey, viewportWidth, isReady, scrollEl]);
 
   useEffect(() => {
     if (!scrollEl) return undefined;
@@ -148,7 +154,12 @@ const AdvancedViewer = memo(function AdvancedViewer({ source }) {
       <div
         ref={setScrollEl}
         className="h-full w-full overflow-y-auto overflow-x-hidden pdf-list-scroll"
-        style={{ height: '100%', visibility: isReady ? 'visible' : 'hidden' }}
+        style={{ 
+          height: '100%', 
+          visibility: isReady ? 'visible' : 'hidden',
+          transition: 'opacity 0.15s ease-in-out',
+          opacity: isReady ? 1 : 0
+        }}
       >
         <div ref={setViewerEl} className="w-full fast-pdf-viewer">
           <PDFDocument pages={pages} />
@@ -161,13 +172,44 @@ const AdvancedViewer = memo(function AdvancedViewer({ source }) {
 export const PDFViewer = memo(function PDFViewer({ path, message, onFileSelect }) {
   const [pdfSource, setPdfSource] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
   const [error, setError] = useState(null);
   const urlRef = useRef(null);
   const [retrySeq, setRetrySeq] = useState(0);
   const lastPathRef = useRef(null);
+  const viewerStateRef = useRef({ isInitialized: false });
+  const loadingTimerRef = useRef(null);
+  const [viewerKey, setViewerKey] = useState(0);
   // Advanced viewer is rendered lazily to avoid initializing the hook with null source
 
   // Debug logs removed for production
+
+  // Handle delayed loading indicator to prevent flickering
+  useEffect(() => {
+    // Clear any existing timer
+    if (loadingTimerRef.current) {
+      clearTimeout(loadingTimerRef.current);
+      loadingTimerRef.current = null;
+    }
+
+    if (loading) {
+      // Start timer to show loading indicator after 1 second
+      loadingTimerRef.current = setTimeout(() => {
+        setShowLoadingIndicator(true);
+      }, 1000);
+    } else {
+      // Hide loading indicator immediately when loading stops
+      setShowLoadingIndicator(false);
+    }
+
+    // Cleanup timer on unmount or loading change
+    return () => {
+      if (loadingTimerRef.current) {
+        clearTimeout(loadingTimerRef.current);
+        loadingTimerRef.current = null;
+      }
+    };
+  }, [loading]);
 
   
   // Load PDF when path changes - keep iframe stable
@@ -199,6 +241,8 @@ export const PDFViewer = memo(function PDFViewer({ path, message, onFileSelect }
       if (isMounted) {
         setLoading(true);
         setError(null);
+        // Force new AdvancedViewer instance to prevent old PDF from doing width fit
+        setViewerKey(prev => prev + 1);
       }
 
       try {
@@ -337,15 +381,27 @@ export const PDFViewer = memo(function PDFViewer({ path, message, onFileSelect }
     );
   }
 
-  if (loading) {
+  if (showLoadingIndicator) {
     return <EmptyState message="טוען PDF..." />;
   }
 
   // Render advanced viewer with automatic width fit on open
   return (
-    <div className="h-full w-full bg-[#faf9f8] flex flex-col min-h-0">
-      {pdfSource && (
-        <AdvancedViewer source={pdfSource} />
+    <div className="h-full w-full bg-white flex flex-col min-h-0 relative">
+      {pdfSource && !loading && (
+        <AdvancedViewer 
+          key={viewerKey}
+          source={pdfSource} 
+          sourceKey={path || 'empty'} 
+        />
+      )}
+      {showLoadingIndicator && (
+        <div className="absolute inset-0 bg-white flex items-center justify-center z-10">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-[#0078d4] mx-auto mb-2" />
+            <p className="text-sm text-[#605e5c]">טוען מסמך...</p>
+          </div>
+        </div>
       )}
     </div>
   );

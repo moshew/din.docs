@@ -120,7 +120,7 @@ export function PDFList({
     
     return (
       <div
-        className={`group relative hover:bg-[#f5f8ff] ${isSelected ? 'bg-[#d7e9fa] hover:bg-[#cbe4f7]' : ''} ${
+        className={`group relative ${isSelected ? 'bg-[#d7e9fa]' : 'hover:bg-[#f5f8ff]'} ${
           isEditMode ? 'pointer-events-none opacity-50' : ''
         }`}
       >

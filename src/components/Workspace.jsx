@@ -39,7 +39,10 @@ export function Workspace({
           />
         </div>
         <div className="w-2/3 bg-white overflow-hidden min-h-0 h-full flex flex-col">
-          <PDFViewer path={selectedPdf?.path || null} />
+          <PDFViewer 
+            key="pdf-viewer-stable" 
+            path={selectedPdf?.path || null} 
+          />
         </div>
       </div>
     </div>
