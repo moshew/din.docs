@@ -75,7 +75,6 @@ function registerHandlers() {
   });
 
   ipcMain.handle('saveCase', async (event, caseToSave) => {
-    console.log('saveCase');
     const current = getById(db.case, caseToSave.id);
     if (current) {
       if (caseToSave.files) {
@@ -90,7 +89,6 @@ function registerHandlers() {
       }
     }
     fs.writeFileSync(dbFilename, JSON.stringify(db));
-    console.log('saveCase', JSON.stringify(caseToSave));
     return { status: 'success' };
   });
 }

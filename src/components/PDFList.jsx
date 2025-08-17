@@ -6,6 +6,7 @@ import { Trash2, Plus, Check, X, Pencil } from 'lucide-react';
 export function PDFList({ 
   files, 
   selectedFile, 
+  selectedPdf,
   onSelectFile, 
   onDeleteFile, 
   onUpdateTitle, 
@@ -133,8 +134,8 @@ export function PDFList({
         <button
           onClick={() => {
             if (isEditMode || isEditing) return;
-            // Avoid reloading when clicking the already selected case
-            if (selectedFile?.id === file.id) return;
+            // Allow reloading if clicking the already selected case but viewing an attachment
+            if (selectedFile?.id === file.id && selectedPdf?.path === selectedFile?.outputFile?.path) return;
             onSelectFile(file);
           }}
           className={`w-full py-2.5 flex items-start transition-colors duration-150 focus:outline-none px-4 pl-16 ${

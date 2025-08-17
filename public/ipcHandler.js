@@ -44,7 +44,6 @@ export function register(mainWindow) {
       result = dialog.showSaveDialogSync(mainWindow, options);
     }
     
-    console.log("fileDialog", JSON.stringify(args), JSON.stringify(result));
     return result;
   });
 
@@ -88,7 +87,6 @@ export function register(mainWindow) {
       }
     }
     
-    console.log("checkCase", JSON.stringify(args), JSON.stringify({ case: doc, missingPath }));
     return { case: doc, missingPath };
   });
 

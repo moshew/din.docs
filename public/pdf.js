@@ -16,18 +16,15 @@ function generate(mainWindow, files) {
   //const app = spawn(executablePath, [files]);
   const app = spawn('python', [executablePath, files]);
   app.stdout.on('data', data => {
-		console.log(data.toString())
     mainWindow.webContents.send("pdfGenFinished", {detail: JSON.parse(data.toString())});
   });
 
   const server = net.createServer(function (stream) {
     stream.on('data', function (data) {
-			console.log(data.toString())
       mainWindow.webContents.send("pdfGenStatus", {detail: JSON.parse(data.toString())});
     });
 
     stream.on('end', function () {
-			console.log('generatePdf - end')
       server.close();
     });
   });

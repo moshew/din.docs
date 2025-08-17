@@ -163,7 +163,7 @@ export function Attachments({
         <div className="flex items-center p-1">
           {isEditMode && (
             <button
-              className="flex-shrink-0 mr-2 cursor-move"
+              className="flex-shrink-0 ml-2 cursor-move"
               draggable
               onDragStart={(e) => handleDragStart(e, index, true)}
               onMouseDown={(e) => e.stopPropagation()}
@@ -189,7 +189,7 @@ export function Attachments({
                   onBlur={handleInputBlur}
                   className="w-full text-sm bg-transparent border-b border-[#0078d4] focus:outline-none focus:bg-transparent px-1 text-[#323130]"
                   title={file.name}
-                  dir="ltr"
+                  dir="rtl"
                 />
               </div>
             ) : (
@@ -201,10 +201,10 @@ export function Attachments({
               </span>
             )}
           </div>
-          {isEditMode && (
+          {isEditMode && hoveredIndex === index && (
             <button
               onClick={() => handleAttachmentRemove(index)}
-              className="p-1 hover:bg-[#f3f2f1] transition-colors ml-2"
+                              className="absolute left-0.5 bottom-1.5 p-1 hover:bg-[#ffebee] transition-colors"
               title="מחק נספח"
             >
               <Trash2 className="w-4 h-4 text-[#a4262c]" />

@@ -51,7 +51,6 @@ contextBridge.exposeInMainWorld('ipcRenderer', {
 					path: webUtils.getPathForFile(file),
 					name: file.name
 				}));
-				console.log(files);
 				callback(files);
 				
 			};

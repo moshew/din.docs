@@ -42,7 +42,6 @@ export default function App() {
     try {
       setLoadError(null);
       const result = await window.ipcRenderer.invoke("loadCase", file.id);
-      console.log('loadCase response:', JSON.stringify(result, null, 2));
       
       if (!result || result.status !== 'success' || !result.case) return;
 
@@ -235,7 +234,7 @@ export default function App() {
             </button>
 
             {/* Thin divider and title snug next to buttons */}
-            <div className="h-6 w-px bg-[#e1dfdd] mx-2" />
+            <div className="h-6 w-px bg-[#e1dfdd] ml-2" />
             <span className="text-lg font-semibold text-[#323130] mr-2">דין.דוקס - הפקת וניהול מסמכים משפטיים</span>
             
           </div>
@@ -249,6 +248,7 @@ export default function App() {
               (file.title || '').toLowerCase().includes(searchQuery.toLowerCase())
             )}
             selectedFile={selectedFile}
+            selectedPdf={selectedPdf}
             onSelectFile={handleSelectFile}
             onDeleteFile={handleDeleteFile}
             onUpdateTitle={handleUpdateTitle}
