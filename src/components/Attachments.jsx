@@ -17,6 +17,7 @@ export function Attachments({
   const [editedAttachments, setEditedAttachments] = useState([]);
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [hoveredDragHandle, setHoveredDragHandle] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const inputRefs = useRef({});
   const originalAttachments = useRef([]);
@@ -160,20 +161,22 @@ export function Attachments({
         onMouseEnter={() => setHoveredIndex(index)}
         onMouseLeave={() => setHoveredIndex(null)}
       >
-        <div className="flex items-center p-1">
+        <div className="flex items-center">
           {isEditMode && (
             <button
-              className="flex-shrink-0 ml-2 cursor-move"
+              className="flex-shrink-0 py-2 pl-2 pr-1 cursor-move"
               draggable
               onDragStart={(e) => handleDragStart(e, index, true)}
               onMouseDown={(e) => e.stopPropagation()}
+              onMouseEnter={() => setHoveredDragHandle(index)}
+              onMouseLeave={() => setHoveredDragHandle(null)}
             >
               <GripVertical className="w-4 h-4 text-[#605e5c]" />
             </button>
           )}
           <div className="flex items-center space-x-3 flex-1 min-w-0">
             {!isEditMode && (
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 py-2 pr-1">
                 {getFileIcon(file.path)}
               </div>
             )}
@@ -201,10 +204,10 @@ export function Attachments({
               </span>
             )}
           </div>
-          {isEditMode && hoveredIndex === index && (
+          {isEditMode && hoveredIndex === index && hoveredDragHandle !== index && (
             <button
               onClick={() => handleAttachmentRemove(index)}
-                              className="absolute left-0.5 bottom-1.5 p-1 hover:bg-[#ffebee] transition-colors"
+              className="delete-button absolute left-0 bottom-1.5 p-1 hover:bg-[#ffebee] transition-colors"
               title="מחק נספח"
             >
               <Trash2 className="w-4 h-4 text-[#a4262c]" />
@@ -223,7 +226,7 @@ export function Attachments({
         </h3>
         {(attachments.length > 0 || isEditMode) && (
           isEditMode ? (
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-0">
               <button
                 onClick={handleSaveEdits}
                 className="p-1 hover:bg-[#f3f2f1] transition-colors"

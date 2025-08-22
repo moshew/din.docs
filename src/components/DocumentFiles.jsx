@@ -196,9 +196,12 @@ export function DocumentFiles({
         return false;
       }
 
+      // Use existing document path as default, or fallback to default name
+      const defaultPath = selectedFile.outputFile?.path || path.join('', 'כתב טענות.pdf');
+      
       const outputPath = await window.ipcRenderer.invoke("fileDialog", {
         type: 'output',
-        defaultPath: path.join('', 'כתב טענות.pdf')
+        defaultPath: defaultPath
       });
 
       if (!outputPath) {

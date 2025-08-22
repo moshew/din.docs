@@ -195,7 +195,7 @@ def generate(fifo, docs):
     send_message("שומר את המסמך לקובץ \"{}\"".format(output_filename), "saving", current_step)
     with open(output_path, "wb") as fp:
       outfile.write(fp)
-      updated_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+      updated_date = datetime.datetime.now().strftime("%Y-%m-%d")
       docs["output"] = {"path": output_path, "updated": updated_date}
       result["output"] = docs["output"]
   except PermissionError:

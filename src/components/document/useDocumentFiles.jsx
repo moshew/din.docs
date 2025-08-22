@@ -54,7 +54,7 @@ export function useDocumentFiles({
               id: selectedFile.id,
               title: selectedFile.title,
               path: detail.output.path,
-              updated: detail.output.updated,
+              ud: detail.output.updated || new Date().toISOString().split('T')[0],
               files: {
                 main: selectedFile.mainFile?.path || null,
                 attachments: selectedFile.attachments.map(att => ({
@@ -70,7 +70,7 @@ export function useDocumentFiles({
               name: getFileNameWithoutExt(detail.output.path),
               path: detail.output.path,
               url: detail.output.url,
-              updated_date: detail.output.updated
+              updated_date: detail.output.updated || new Date().toISOString().split('T')[0]
             }, { force: true });
           }
         }
@@ -253,9 +253,12 @@ export function useDocumentFiles({
         return false;
       }
 
+      // Use existing document path as default, or fallback to default name
+      const defaultPath = selectedFile.outputFile?.path || path.join('', 'כתב טענות.pdf');
+      
       const newOutputPath = await window.ipcRenderer.invoke("fileDialog", {
         type: 'output',
-        defaultPath: path.join('', 'כתב טענות.pdf')
+        defaultPath: defaultPath
       });
 
       if (!newOutputPath) {

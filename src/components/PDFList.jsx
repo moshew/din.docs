@@ -30,7 +30,8 @@ export function PDFList({
         if (result.status === 'success') {
           const newFile = {
             id: result.id,
-            title: newFileName.trim()
+            title: newFileName.trim(),
+            updated_date: new Date().toISOString().split('T')[0]
           };
           onSelectFile(newFile);
           setNewFileName('');
@@ -103,9 +104,7 @@ export function PDFList({
       return new Date(date).toLocaleDateString('he-IL', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+        day: 'numeric'
       });
     } catch (error) {
       console.error('Error formatting date:', error);

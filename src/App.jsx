@@ -21,7 +21,12 @@ export default function App() {
       try {
         const result = await window.ipcRenderer.invoke("loadAll", null);
         if (result.status === 'success') {
-          setFiles(result.cases);
+          // Map ud field to updated_date for display
+          const filesWithUpdatedDate = result.cases.map(file => ({
+            ...file,
+            updated_date: file.ud
+          }));
+          setFiles(filesWithUpdatedDate);
         }
       } catch (error) {
         console.error('Failed to load initial data:', error);
@@ -49,7 +54,7 @@ export default function App() {
 
       // Get output path and updated timestamp from the normalized schema
       const outputPath = typeof result.case.path === 'string' && result.case.path ? result.case.path : null;
-      const updatedDate = typeof result.case.updated === 'string' ? result.case.updated : undefined;
+      const updatedDate = typeof result.case.ud === 'string' ? result.case.ud : undefined;
 
       const updatedFile = {
         id: file.id,
@@ -159,9 +164,10 @@ export default function App() {
     } catch (e) {
       // proceed with UI update even if persistence fails
     }
-    setFiles(prev => prev.map(f => f.id === fileId ? { ...f, title: newTitle } : f));
+    const today = new Date().toISOString().split('T')[0];
+    setFiles(prev => prev.map(f => f.id === fileId ? { ...f, title: newTitle, updated_date: today } : f));
     if (selectedFile?.id === fileId) {
-      setSelectedFile(prev => ({ ...prev, title: newTitle }));
+      setSelectedFile(prev => ({ ...prev, title: newTitle, updated_date: today }));
     }
   };
 
