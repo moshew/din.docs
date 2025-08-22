@@ -212,21 +212,21 @@ export default function App() {
           {/* Window controls anchored to the right, then a thin divider and title next to them */}
           <div className="absolute right-0 top-0 h-14 flex items-center select-none pr-0">
             <button
-              className="w-12 h-14 transition-colors hover:bg-[#E81123] flex items-center justify-center group"
+              className="w-12 h-14 transition-colors hover:bg-[#E81123] flex items-center justify-center group cursor-default"
               title="סגור"
               onClick={() => window.ipcRenderer.invoke('window:close')}
             >
               <X className="w-4 h-4 text-[#323130] group-hover:text-white" />
             </button>
             <button
-              className="w-12 h-14 transition-colors flex items-center justify-center opacity-50 cursor-not-allowed"
+              className="w-12 h-14 transition-colors flex items-center justify-center opacity-50"
               title="מוגדל"
               disabled
             >
               <Square className="w-4 h-4 text-[#a0a0a0]" />
             </button>
             <button
-              className="w-12 h-14 hover:bg-[#e1dfdd] transition-colors flex items-center justify-center"
+              className="w-12 h-14 hover:bg-[#e1dfdd] transition-colors flex items-center justify-center cursor-default"
               title="מזער"
               onClick={() => window.ipcRenderer.invoke('window:minimize')}
             >
