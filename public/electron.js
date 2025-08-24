@@ -26,16 +26,17 @@ function createWindow() {
       height,
 			frame: false,
 			alwaysOnTop: false,
+      resizable: false,
       webPreferences: {
         preload: path.join(__dirname, 'preload.js'),
 				contextIsolation: true,
         nodeIntegration: false
 				
       },
-      icon: path.join(__dirname, 'app_icon.png'),
+      icon: isDev ? path.join(__dirname, 'app_icon.png') : path.join(__dirname, '../dist/app_icon.png'),
       autoHideMenuBar: false,
     },
-    templateUrl: path.join(__dirname, 'splash.html'),
+    templateUrl: isDev ? path.join(__dirname, 'splash.html') : path.join(__dirname, '../dist/splash.html'),
     splashScreenOpts: {
       alwaysOnTop: false,
       width: 938,
@@ -48,23 +49,11 @@ function createWindow() {
   const mainWindow = Splashscreen.initSplashScreen(splashScreenOptions);
 
   mainWindow.webContents.session.clearCache();
-  mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, 'index.html')}`);
+  mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../dist/index.html')}`);
 
-  mainWindow.once('ready-to-show', () => {
-    setTimeout(() => {
-      // Maximize the window by default
-      try {
-        mainWindow.maximize();
-      } catch {}
-    }, 0);
-  });
+  // Window is ready to show - no additional actions needed
 
-  // Prevent leaving maximized state
-  try {
-    mainWindow.on('unmaximize', () => {
-      try { mainWindow.maximize(); } catch {}
-    });
-  } catch {}
+  // No window state restrictions needed
 
   if (isDev) mainWindow.webContents.openDevTools({ mode: 'detach' });
   register(mainWindow);

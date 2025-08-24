@@ -1,6 +1,8 @@
 {
-  "name": "pdf-viewer",
+  "name": "din-docs",
   "main": "public/electron.js",
+  "description": "Din.Docs - Document and PDF management application",
+  "author": "Din.Docs Team",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -9,10 +11,12 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "electron": "set ELECTRON_START_URL=http://localhost:3000 && electron ."
+    "electron": "set ELECTRON_START_URL=http://localhost:3000 && electron .",
+		"package": "electron-builder --win --publish never"
   },
   "dependencies": {
-    "electron": "^34.2.0",
+    "@trodi/electron-splashscreen": "^1.0.2",
+    "electron-is-dev": "^2.0.0",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -21,9 +25,35 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.18",
+    "electron": "^34.2.0",
+    "electron-builder": "^26.0.12",
     "eslint": "^9.9.1",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "vite": "^5.4.2"
+  },
+  "build": {
+    "appId": "com.din.docs",
+    "productName": "Din.Docs",
+    "directories": {
+      "output": "dist_electron"
+    },
+    "files": [
+      "dist/**/*",
+      "public/electron.js",
+      "public/preload.js",
+      "public/ipcHandler.js",
+      "public/db.js",
+      "public/pdf.js"
+    ],
+    "win": {
+      "icon": "public/app_icon-256.png"
+    },
+		"extraResources": [
+      {
+        "from": "./srv",
+        "to": "srv"
+      }
+    ]
   }
 }
