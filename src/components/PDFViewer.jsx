@@ -70,6 +70,18 @@ const EmptyState = ({ message, subtitle, onSelect }) => (
   </div>
 );
 
+const DocxOpenedState = ({ fileName }) => (
+  <div className="h-full flex flex-col items-center justify-center bg-white p-6">
+    <FileText className="w-16 h-16 text-[#2B579A] mb-6" />
+    <p className="text-xl font-medium text-[#323130] mb-3 text-center">
+      הקובץ נפתח באפליקציה חיצונית
+    </p>
+    <p className="text-sm text-[#605e5c] text-center">
+      {fileName ? `הקובץ "${fileName}" נפתח באפליקציית Word מחוץ למערכת הנוכחית` : 'הקובץ נפתח באפליקציית Word מחוץ למערכת הנוכחית'}
+    </p>
+  </div>
+);
+
 const ErrorState = ({ error, subtitle, onRetry, loading }) => (
   <div className="h-full flex flex-col items-center justify-center bg-white p-6">
     <FileText className="w-16 h-16 text-[#d4d4d4] mb-6" />
@@ -169,11 +181,12 @@ const AdvancedViewer = memo(function AdvancedViewer({ source, sourceKey }) {
   );
 });
 
-export const PDFViewer = memo(function PDFViewer({ path, message, onFileSelect }) {
+export const PDFViewer = memo(function PDFViewer({ path, message, onFileSelect, fileName, forceReload }) {
   const [pdfSource, setPdfSource] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
   const [error, setError] = useState(null);
+  const [docxOpened, setDocxOpened] = useState(false);
   const urlRef = useRef(null);
   const [retrySeq, setRetrySeq] = useState(0);
   const lastPathRef = useRef(null);
@@ -228,19 +241,21 @@ export const PDFViewer = memo(function PDFViewer({ path, message, onFileSelect }
           setPdfSource(null);
           setError(null);
           setLoading(false);
+          setDocxOpened(false);
           lastPathRef.current = null;
         }
         return;
       }
 
-      // Skip reload if the same path is already loaded
-      if (lastPathRef.current === path && pdfSource) {
+      // Skip reload if the same path is already loaded, unless forced to reload
+      if (lastPathRef.current === path && pdfSource && !forceReload) {
         return;
       }
 
       if (isMounted) {
         setLoading(true);
         setError(null);
+        setDocxOpened(false);
         // Force new AdvancedViewer instance to prevent old PDF from doing width fit
         setViewerKey(prev => prev + 1);
       }
@@ -262,10 +277,11 @@ export const PDFViewer = memo(function PDFViewer({ path, message, onFileSelect }
           const resultTag = pdfData && pdfData.result;
 
           if (resultTag === 'docx') {
-            // File opened externally; hide viewer without error
+            // File opened externally; show DOCX opened message
             setPdfSource(null);
             setLoading(false);
             setError(null);
+            setDocxOpened(true);
             return;
           }
 
@@ -350,7 +366,7 @@ export const PDFViewer = memo(function PDFViewer({ path, message, onFileSelect }
     return () => {
       isMounted = false;
     };
-  }, [path, retrySeq]);
+  }, [path, retrySeq, forceReload]);
 
   // Clean up URL when component unmounts
   useEffect(() => {
@@ -368,6 +384,10 @@ export const PDFViewer = memo(function PDFViewer({ path, message, onFileSelect }
   // Show loading/error states when needed, otherwise show PDF
   if (!path) {
     return <EmptyState message={message} onSelect={onFileSelect} />;
+  }
+  
+  if (docxOpened) {
+    return <DocxOpenedState fileName={fileName} />;
   }
   
   if (error) {

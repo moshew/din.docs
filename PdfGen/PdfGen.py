@@ -183,7 +183,7 @@ def generate(fifo, docs):
     infile = PdfReader(merged_file)
     outfile = PdfWriter()
     total_pages = len(infile.pages)
-    draft = "draft" in docs and docs["draft"]==True
+    draft = "isDraft" in docs and docs["isDraft"]==True
 
     current_step += 1
     for page_num in range(total_pages):
@@ -214,13 +214,17 @@ if __name__ == "__main__":
   sys.stdout.reconfigure(encoding='utf-8')  # Ensure UTF-8 output
   result = {"status": "error", "msg": "תקלה בפרמטרים"}
   try:
-    base_dir = getattr(sys, '_MEIPASS', os.getcwd())
+    if getattr(sys, 'frozen', False):
+      base_dir = sys._MEIPASS
+    else:
+      base_dir = os.path.dirname(os.path.abspath(__file__))
+
     fifo = os.open(PIPE_PATH, os.O_WRONLY)
+    #fifo=None
     docs = json.loads(sys.argv[1])
+    #docs = json.loads(r'{"main":"C:\\din.docs\\temp.pdf","attachments":[],"output":{"path":"C:\\Users\\Moshe\\Downloads\\test.pdf"},"isDraft":true}')
     result = generate(fifo, docs)
   finally:
-    #print(result)
-    #print(docs)
     if fifo: os.close(fifo)
     print(json.dumps(result))
     

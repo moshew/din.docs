@@ -70,7 +70,8 @@ export function useDocumentFiles({
               name: getFileNameWithoutExt(detail.output.path),
               path: detail.output.path,
               url: detail.output.url,
-              updated_date: detail.output.updated || new Date().toISOString().split('T')[0]
+              updated_date: detail.output.updated || new Date().toISOString().split('T')[0],
+              forceTimestamp: Date.now()
             }, { force: true });
           }
         }

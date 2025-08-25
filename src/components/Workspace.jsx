@@ -42,6 +42,8 @@ export function Workspace({
           <PDFViewer 
             key="pdf-viewer-stable" 
             path={selectedPdf?.path || null} 
+            fileName={selectedPdf?.name}
+            forceReload={selectedPdf?.forceTimestamp}
           />
         </div>
       </div>
