@@ -1,7 +1,16 @@
 <?php
 require_once 'config.php';
 
+// Add CORS headers
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: text/html; charset=utf-8');
+
+// Handle OPTIONS preflight request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
 
 // Get parameters
 $key = $_GET['key'] ?? '';
@@ -26,16 +35,12 @@ if (empty($key)) {
         
         if (!$user) {
             $error = 'מפתח הורדה לא תקין או שפג תוקפו';
-        } elseif ($user['status'] === 'used') {
-            // Allow re-download but show warning
-            $downloadInfo = $user;
-            $warning = 'מפתח זה כבר שומש בעבר. אתה יכול להוריד שוב אך יתכן שזו לא הגרסה העדכנית ביותר.';
+        } elseif ($user['status'] === 'downloaded') {
+            // Key already used for download - don't allow again
+            $error = 'מפתח זה כבר שימש להורדה. לא ניתן להוריד יותר מפעם אחת מאותו מפתח. אנא הירשמו מחדש לקבלת מפתח חדש.';
         } else {
             $downloadInfo = $user;
-            
-            // Update status to used and record download
-            $stmt = $pdo->prepare("UPDATE users_keys SET status = 'used', downloaded_at = NOW() WHERE id = ?");
-            $stmt->execute([$user['id']]);
+            // Note: Status will be updated to 'downloaded' in download_file.php when actual download happens
         }
         
     } catch (Exception $e) {
@@ -45,7 +50,7 @@ if (empty($key)) {
 }
 
 // Check if installer file exists
-$installerPath = './Din.Docs-Setup-1.0.0.exe';
+$installerPath = '../Din.Docs-Setup-1.0.0.exe';
 $installerExists = file_exists($installerPath);
 $installerSize = $installerExists ? filesize($installerPath) : 0;
 ?>

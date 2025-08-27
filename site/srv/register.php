@@ -9,7 +9,16 @@ ob_start();
 require_once 'config.php';
 require_once 'email.php';
 
+// Add CORS headers for React frontend
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: text/html; charset=utf-8');
+
+// Handle OPTIONS preflight request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
 
 // Handle POST request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -320,7 +329,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <strong>בעל הרישיון:</strong> מרכז דין.אונליין לשירותים משפטיים מקוונים<br><br>
                             
                             <strong>תנאי השימוש:</strong><br>
-                            1. התוכנה מסופקת "כפי שהיא" (AS-IS) ללא כל אחריות מפורשת או משתמעת.<br>
+                            1. התוכנה מסופקת "כפי שהיא" ‎(AS-IS) ללא כל אחריות מפורשת או משתמעת.<br>
                             2. בעל הרישיון אינו נושא באחריות לכל נזק, ישיר או עקיף, שעלול להיגרם כתוצאה משימוש בתוכנה.<br>
                             3. אין תמיכה טכנית זמינה לתוכנה זו.<br>
                             4. השימוש בתוכנה הוא על אחריות המשתמש בלבד.<br>

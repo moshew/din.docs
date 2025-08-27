@@ -18,8 +18,8 @@ define('FROM_EMAIL', 'sivan@din-online.co.il');
 define('FROM_NAME', 'מרכז דין.אונליין');
 
 // Site configuration
-define('SITE_URL', 'http://docs.din-online.co.il');
-define('DOWNLOAD_URL', SITE_URL . '/download');
+define('SITE_URL', 'https://docs.din-online.co.il');
+define('DOWNLOAD_FILE_URL', SITE_URL . '/download_file');
 
 // Database connection
 function getDBConnection() {

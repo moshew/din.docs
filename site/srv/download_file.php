@@ -1,12 +1,23 @@
 <?php
 require_once 'config.php';
 
+// Add CORS headers
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+// Handle OPTIONS preflight request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
+
 // Get key parameter
 $key = $_GET['key'] ?? '';
 
 if (empty($key)) {
-    http_response_code(400);
-    die('מפתח הורדה חסר');
+    // Redirect to app with error modal
+    header('Location: https://docs.din-online.co.il/?error=' . urlencode('מפתח הורדה חסר'));
+    exit;
 }
 
 try {
@@ -21,16 +32,33 @@ try {
     $user = $stmt->fetch();
     
     if (!$user) {
-        http_response_code(404);
-        die('מפתח הורדה לא תקין');
+        // Redirect to app with error modal
+        header('Location: https://docs.din-online.co.il/?error=' . urlencode('מפתח הורדה לא תקין או שפג תוקפו'));
+        exit;
+    }
+    
+    // Check if key was already used for download
+    if ($user['status'] === 'downloaded') {
+        // Log attempted reuse
+        DinDocsLogger::warning("Attempted download with already used key", [
+            'email' => $user['email'],
+            'key' => $key,
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+            'last_download' => $user['last_download']
+        ]);
+        
+        // Redirect to app with error modal
+        header('Location: https://docs.din-online.co.il/?error=' . urlencode('מפתח זה כבר שימש להורדה. לא ניתן להוריד יותר מפעם אחת מאותו מפתח'));
+        exit;
     }
     
     // Path to installer file
-    $installerPath = './Din.Docs-Setup-1.0.0.exe';
+    $installerPath = '../Din.Docs-Setup-1.0.0.exe';
     
     if (!file_exists($installerPath)) {
-        http_response_code(404);
-        die('קובץ ההתקנה לא נמצא');
+        // Redirect to app with error modal
+        header('Location: https://docs.din-online.co.il/?error=' . urlencode('קובץ ההתקנה אינו זמין כרגע. אנא נסה שוב מאוחר יותר או פנה לתמיכה'));
+        exit;
     }
     
     // Log download attempt
@@ -53,9 +81,16 @@ try {
         'user_agent' => substr($_SERVER['HTTP_USER_AGENT'] ?? 'unknown', 0, 100)
     ]);
     
-    // Update download count
-    $stmt = $pdo->prepare("UPDATE users_keys SET download_count = download_count + 1, last_download = NOW() WHERE id = ?");
+    // Update download count and set status to downloaded
+    $stmt = $pdo->prepare("UPDATE users_keys SET download_count = download_count + 1, last_download = NOW(), status = 'downloaded' WHERE id = ?");
     $stmt->execute([$user['id']]);
+    
+    // Log successful download completion
+    DinDocsLogger::info("Download completed successfully - key marked as used", [
+        'email' => $user['email'],
+        'key' => $key,
+        'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+    ]);
     
 } catch (Exception $e) {
     DinDocsLogger::error("Download file error", [
@@ -63,8 +98,9 @@ try {
         'key' => $key,
         'trace' => $e->getTraceAsString()
     ]);
-    http_response_code(500);
-    die('שגיאה במערכת');
+    // Redirect to app with error modal
+    header('Location: https://docs.din-online.co.il/?error=' . urlencode('שגיאה במערכת. אנא נסה שוב מאוחר יותר'));
+    exit;
 }
 
 // Serve the file
@@ -93,8 +129,9 @@ if ($file) {
     }
     fclose($file);
 } else {
-    http_response_code(500);
-    die('שגיאה בקריאת הקובץ');
+    // Redirect to app with error modal
+    header('Location: https://docs.din-online.co.il/?error=' . urlencode('שגיאה בקריאת הקובץ. אנא נסה שוב מאוחר יותר'));
+    exit;
 }
 
 exit;

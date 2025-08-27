@@ -1,10 +1,125 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ScrollAnimation from './components/ScrollAnimation';
-import { FileText, Zap, Shield, Users, Clock, Check, ArrowLeft, Scale, Gavel, FileSearch, Edit3, BookOpen, Target, TrendingUp, Star } from 'lucide-react';
+import { FileText, Zap, Shield, Users, Clock, Check, ArrowLeft, Scale, Gavel, FileSearch, Edit3, BookOpen, Target, TrendingUp, Star, X, AlertCircle } from 'lucide-react';
 
 function App() {
+  const [email, setEmail] = useState('');
+  const [agreeMarketing, setAgreeMarketing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
+  const [downloadData, setDownloadData] = useState<{key: string, want_updates: boolean} | null>(null);
+  const [errorModal, setErrorModal] = useState<string | null>(null);
+
+  // Check for error parameter in URL on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const errorParam = urlParams.get('error');
+    if (errorParam) {
+      setErrorModal(decodeURIComponent(errorParam));
+      // Clean URL without refreshing the page
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email) {
+      setMessage('אנא הזינו כתובת אימייל תקינה');
+      setMessageType('error');
+      return;
+    }
+
+    setIsLoading(true);
+    setMessage('');
+    setMessageType('');
+
+    try {
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('agree_license', '1');
+      formData.append('want_updates', agreeMarketing ? '1' : '0');
+      formData.append('ajax', '1');
+
+      const response = await fetch('/srv/register.php', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage(data.message);
+        setMessageType('success');
+        setDownloadData({
+          key: data.key,
+          want_updates: data.want_updates
+        });
+      } else {
+        setMessage(data.message || 'שגיאה לא ידועה');
+        setMessageType('error');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setMessage('שגיאה בחיבור לשרת. אנא נסו שוב.');
+      setMessageType('error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white" dir="rtl">
+      {/* Error Modal */}
+      {errorModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-red-600 flex items-center">
+                  <AlertCircle className="h-6 w-6 ml-2" />
+                  שגיאה בהורדת הקובץ
+                </h3>
+                <button 
+                  onClick={() => setErrorModal(null)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              <div className="text-gray-700 mb-6 text-right">
+                <p className="mb-4">{errorModal}</p>
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    💡 <strong>כיצד לפתור:</strong>
+                  </p>
+                  <ul className="text-sm text-blue-700 mt-2 space-y-1">
+                    <li>• בדקו שהקישור באימייל עדיין בתוקף</li>
+                    <li>• נסו שוב או פנו לתמיכה טכנית</li>
+                    <li>• תוכלו להירשם מחדש במקרה הצורך</li>
+                  </ul>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setErrorModal(null)}
+                  className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  סגור
+                </button>
+                <a 
+                  href="#free-download" 
+                  onClick={() => setErrorModal(null)}
+                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-center"
+                >
+                  הירשם מחדש
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -135,35 +250,96 @@ function App() {
             <h2 className="text-4xl font-bold mb-4">דין.דוקס - בחינם, לתמיד*! 🎉</h2>
             <p className="text-xl mb-8 max-w-2xl mx-auto">
               הורידו עכשיו את דין.דוקס ללא עלות, ללא מגבלות זמן, ללא תשלומים נסתרים.
-              המערכת המלאה זמינה לכם בחינם לתמיד*!
+              המערכת המלאה זמינה לכם בחינם - לתמיד*!
             </p>
             
             <div className="bg-white rounded-2xl p-6 max-w-md mx-auto">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">קבלו קישור להורדה</h3>
-              <p className="text-gray-600 mb-4">השאירו את כתובת האימייל שלכם ונשלח לכם קישור להורדת התוכנה</p>
-              <div className="space-y-4">
-                <input 
-                  type="email" 
-                  placeholder="כתובת אימייל"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-                />
-                <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                  שלחו לי קישור להורדה
-                </button>
-              </div>
-              <p className="text-sm text-gray-500 mt-3">
-                ⓘ לא נשלח לכם ספאם, רק קישור להורדה חד פעמי
-              </p>
-              
-              <div className="mt-6 pt-4 border-t border-gray-200">
-                <p className="text-xs text-gray-500 text-right">
-                  * תנאי השימוש החינמי:
-                </p>
-                <ul className="text-xs text-gray-500 mt-2 space-y-1 text-right">
-                  <li>1. תיתכן גרסה בתשלום עבור יכולות עתידיות</li>
-                  <li>2. המערכת הינה as-is. תמיכה תתאפשר בתשלום נפרד</li>
-                </ul>
-              </div>
+              {downloadData ? (
+                // Success state - show success message only
+                <div className="text-center">
+                  <div className="bg-green-100 p-4 rounded-full w-fit mx-auto mb-4">
+                    <Check className="h-8 w-8 text-green-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">הרשמה הושלמה בהצלחה!</h3>
+                  <p className="text-gray-600 mb-4">
+                    נשלח לכם אימייל עם קישור להורדת התוכנה לכתובת שציינתם.
+                  </p>
+                  <p className="text-sm text-gray-500 bg-blue-50 p-3 rounded-lg">
+                    💡 בדקו את תיבת הדואר שלכם (כולל תיקיית הספאם) - האימייל אמור להגיע תוך דקות ספורות
+                  </p>
+                  {downloadData.want_updates && (
+                    <p className="text-sm text-green-600 mt-2">
+                      ✅ נרשמתם גם לקבלת עדכונים על גרסאות חדשות
+                    </p>
+                  )}
+                </div>
+              ) : (
+                // Registration form
+                <>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4">קבלו קישור להורדה</h3>
+                  <p className="text-gray-600 mb-4">השאירו את כתובת האימייל שלכם ונשלח לכם קישור להורדת התוכנה</p>
+                  
+                  {message && (
+                    <div className={`p-3 rounded-lg mb-4 text-center ${
+                      messageType === 'success' 
+                        ? 'bg-green-100 text-green-800 border border-green-200' 
+                        : 'bg-red-100 text-red-800 border border-red-200'
+                    }`}>
+                      {message}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSubmit} className="space-y-2">
+                    <input 
+                      type="email" 
+                      placeholder="כתובת אימייל"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-gray-400 text-right text-gray-900"
+                      disabled={isLoading}
+                      required
+                    />
+                    
+                    <div className="flex items-start space-x-2 text-right pb-6">
+                      <input
+                        type="checkbox"
+                        id="marketing"
+                        checked={agreeMarketing}
+                        onChange={(e) => setAgreeMarketing(e.target.checked)}
+                        className="mt-1 ml-2"
+                        disabled={isLoading}
+                      />
+                      <label htmlFor="marketing" className="text-sm text-gray-600 cursor-pointer">
+                        אני מעוניין/ת לקבל עדכונים על גרסאות חדשות ושיפורים
+                      </label>
+                    </div>
+
+                    <div className="mt-6">
+                      <button 
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      >
+                        {isLoading ? 'שולח...' : 'שלחו לי קישור להורדה'}
+                      </button>
+                    </div>
+                  </form>
+                  
+                  <p className="text-sm text-gray-500 mt-3">
+                    ⓘ לא נשלח לכם ספאם, רק קישור להורדה חד פעמי
+                  </p>
+                  
+                  <div className="mt-6 pt-4 border-t border-gray-200">
+                    <p className="text-xs text-gray-500 text-right">
+                      * תנאי השימוש החינמי:
+                    </p>
+                    <ul className="text-xs text-gray-500 mt-2 space-y-1 text-right">
+                      <li>1. תיתכן גרסה בתשלום עבור יכולות עתידיות</li>
+                      <li>2. המערכת הינה as-is. תמיכה תתאפשר בתשלום נפרד</li>
+                    </ul>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -5,23 +5,29 @@ RewriteEngine On
 # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # Clean URLs for register page
-RewriteRule ^register/?$ register.php [L]
+RewriteRule ^register/?$ srv/register.php [L]
 
 # Clean URLs for download page  
-RewriteRule ^download/?$ download.php [QSA,L]
+RewriteRule ^download/?$ srv/download.php [QSA,L]
+
+# Clean URLs for download file
+RewriteRule ^download_file/?$ srv/download_file.php [QSA,L]
+
+# Redirect /srv requests to srv folder
+RewriteRule ^srv/(.*)$ srv/$1 [L]
 
 # Prevent access to sensitive files
-<Files "config.php">
+<Files "srv/config.php">
     Order Allow,Deny
     Deny from all
 </Files>
 
-<Files "email.php">
+<Files "srv/email.php">
     Order Allow,Deny
     Deny from all
 </Files>
 
-<Files "database.sql">
+<Files "srv/database.sql">
     Order Allow,Deny
     Deny from all
 </Files>

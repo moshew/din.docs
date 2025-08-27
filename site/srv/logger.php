@@ -5,10 +5,23 @@ class DinDocsLogger {
     private static $errorFile = './logs/din_docs_errors.log';
     
     public static function init() {
-        // יצירת ספריית לוגים אם לא קיימת
-        $logDir = dirname(self::$logFile);
-        if (!is_dir($logDir)) {
-            mkdir($logDir, 0755, true);
+        // בדיקה אם יש הרשאות כתיבה בתיקייה הנוכחית
+        $currentDir = dirname(__FILE__);
+        if (!is_writable($currentDir)) {
+            // אם אין הרשאות כתיבה, נשתמש בתיקייה זמנית מלכתחילה
+            self::$logFile = sys_get_temp_dir() . '/din_docs.log';
+            self::$errorFile = sys_get_temp_dir() . '/din_docs_errors.log';
+        } else {
+            // יצירת ספריית לוגים אם לא קיימת
+            $logDir = dirname(self::$logFile);
+            if (!is_dir($logDir)) {
+                // נשתמש ב-@ כדי למנוע הודעות warning גלויות
+                if (!@mkdir($logDir, 0755, true) && !is_dir($logDir)) {
+                    // אם לא הצלחנו ליצור את התיקייה, נשתמש בתיקייה זמנית
+                    self::$logFile = sys_get_temp_dir() . '/din_docs.log';
+                    self::$errorFile = sys_get_temp_dir() . '/din_docs_errors.log';
+                }
+            }
         }
         
         // הגדרת error handler מותאם אישית
@@ -22,11 +35,20 @@ class DinDocsLogger {
         $logEntry = "[$timestamp] [$level] $message$contextStr" . PHP_EOL;
         
         // כתיבה לקובץ הלוג הכללי
-        file_put_contents(self::$logFile, $logEntry, FILE_APPEND | LOCK_EX);
+        try {
+            @file_put_contents(self::$logFile, $logEntry, FILE_APPEND | LOCK_EX);
+        } catch (Exception $e) {
+            // אם הכתיבה נכשלת, נתעלם מזה כדי לא ליצור לולאת שגיאות
+            error_log("Failed to write to log file: " . $e->getMessage());
+        }
         
         // אם זה שגיאה, גם לקובץ השגיאות
         if (in_array($level, ['ERROR', 'CRITICAL'])) {
-            file_put_contents(self::$errorFile, $logEntry, FILE_APPEND | LOCK_EX);
+            try {
+                @file_put_contents(self::$errorFile, $logEntry, FILE_APPEND | LOCK_EX);
+            } catch (Exception $e) {
+                error_log("Failed to write to error log file: " . $e->getMessage());
+            }
         }
     }
     
@@ -96,16 +118,27 @@ class DinDocsLogger {
             return [];
         }
         
-        $allLines = file($logFile, FILE_IGNORE_NEW_LINES);
-        return array_slice($allLines, -$lines);
+        try {
+            $allLines = @file($logFile, FILE_IGNORE_NEW_LINES);
+            if ($allLines === false) {
+                return [];
+            }
+            return array_slice($allLines, -$lines);
+        } catch (Exception $e) {
+            return [];
+        }
     }
     
     public static function clearLogs() {
-        if (file_exists(self::$logFile)) {
-            file_put_contents(self::$logFile, '');
-        }
-        if (file_exists(self::$errorFile)) {
-            file_put_contents(self::$errorFile, '');
+        try {
+            if (file_exists(self::$logFile)) {
+                @file_put_contents(self::$logFile, '');
+            }
+            if (file_exists(self::$errorFile)) {
+                @file_put_contents(self::$errorFile, '');
+            }
+        } catch (Exception $e) {
+            error_log("Failed to clear log files: " . $e->getMessage());
         }
     }
     
@@ -118,16 +151,22 @@ class DinDocsLogger {
             'error_file_size' => 0
         ];
         
-        if (file_exists(self::$logFile)) {
-            $stats['log_file_size'] = filesize(self::$logFile);
-            $content = file_get_contents(self::$logFile);
-            $stats['total_logs'] = substr_count($content, "\n");
-            $stats['errors'] = substr_count($content, '[ERROR]') + substr_count($content, '[CRITICAL]');
-            $stats['warnings'] = substr_count($content, '[WARNING]');
-        }
-        
-        if (file_exists(self::$errorFile)) {
-            $stats['error_file_size'] = filesize(self::$errorFile);
+        try {
+            if (file_exists(self::$logFile)) {
+                $stats['log_file_size'] = @filesize(self::$logFile) ?: 0;
+                $content = @file_get_contents(self::$logFile);
+                if ($content !== false) {
+                    $stats['total_logs'] = substr_count($content, "\n");
+                    $stats['errors'] = substr_count($content, '[ERROR]') + substr_count($content, '[CRITICAL]');
+                    $stats['warnings'] = substr_count($content, '[WARNING]');
+                }
+            }
+            
+            if (file_exists(self::$errorFile)) {
+                $stats['error_file_size'] = @filesize(self::$errorFile) ?: 0;
+            }
+        } catch (Exception $e) {
+            error_log("Failed to get log stats: " . $e->getMessage());
         }
         
         return $stats;
