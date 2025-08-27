@@ -56,7 +56,7 @@ const EmptyState = ({ message, subtitle, onSelect }) => (
       {message || 'לא נבחר מסמך'}
     </p>
     <p className="text-sm text-[#605e5c] mb-5 text-center">
-      {subtitle || 'בחר מסמך מהרשימה או העלה קובץ חדש'}
+      {subtitle}
     </p>
     {onSelect && (
       <button
@@ -181,7 +181,7 @@ const AdvancedViewer = memo(function AdvancedViewer({ source, sourceKey }) {
   );
 });
 
-export const PDFViewer = memo(function PDFViewer({ path, message, onFileSelect, fileName, forceReload }) {
+export const PDFViewer = memo(function PDFViewer({ path, message, subtitle, onFileSelect, fileName, forceReload }) {
   const [pdfSource, setPdfSource] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showLoadingIndicator, setShowLoadingIndicator] = useState(false);
@@ -383,7 +383,7 @@ export const PDFViewer = memo(function PDFViewer({ path, message, onFileSelect, 
 
   // Show loading/error states when needed, otherwise show PDF
   if (!path) {
-    return <EmptyState message={message} onSelect={onFileSelect} />;
+    return <EmptyState message={message} subtitle={subtitle} onSelect={onFileSelect} />;
   }
   
   if (docxOpened) {

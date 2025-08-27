@@ -55,8 +55,7 @@ export function PDFList({
         if (result.status === 'success') {
           const newFile = {
             id: result.id,
-            title: newFileName.trim(),
-            updated_date: new Date().toISOString().split('T')[0]
+            title: newFileName.trim()
           };
           onSelectFile(newFile);
           resetNewDocumentState();
@@ -140,8 +139,7 @@ export function PDFList({
         if (result.status === 'success') {
           const newFile = {
             id: result.id,
-            title: duplicateFileName.trim(),
-            updated_date: new Date().toISOString().split('T')[0]
+            title: duplicateFileName.trim()
           };
           onSelectFile(newFile);
           resetDuplicateState();

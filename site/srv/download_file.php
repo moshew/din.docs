@@ -16,7 +16,7 @@ $key = $_GET['key'] ?? '';
 
 if (empty($key)) {
     // Redirect to app with error modal
-    header('Location: https://docs.din-online.co.il/?error=' . urlencode('מפתח הורדה חסר'));
+    header('Location: https://docs.din-online.co.il/?error=' . urlencode('לינק ההורדה לא תקין'));
     exit;
 }
 
@@ -33,7 +33,7 @@ try {
     
     if (!$user) {
         // Redirect to app with error modal
-        header('Location: https://docs.din-online.co.il/?error=' . urlencode('מפתח הורדה לא תקין או שפג תוקפו'));
+        header('Location: https://docs.din-online.co.il/?error=' . urlencode('לינק ההורדה לא תקין או שפג תוקפו'));
         exit;
     }
     
@@ -48,7 +48,7 @@ try {
         ]);
         
         // Redirect to app with error modal
-        header('Location: https://docs.din-online.co.il/?error=' . urlencode('מפתח זה כבר שימש להורדה. לא ניתן להוריד יותר מפעם אחת מאותו מפתח'));
+        header('Location: https://docs.din-online.co.il/?error=' . urlencode('לינק זה כבר שימש להורדה. לא ניתן להוריד יותר מפעם אחת מאותו לינק אישי'));
         exit;
     }
     

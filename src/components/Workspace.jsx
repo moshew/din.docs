@@ -44,6 +44,8 @@ export function Workspace({
             path={selectedPdf?.path || null} 
             fileName={selectedPdf?.name}
             forceReload={selectedPdf?.forceTimestamp}
+            message={!selectedPdf ? "המסמך טרם נוצר" : undefined}
+            subtitle={!selectedPdf ? "לחץ על כפתור \"הפק מסמך\" כדי ליצור את הקובץ" : undefined}
           />
         </div>
       </div>

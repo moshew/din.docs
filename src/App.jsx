@@ -165,10 +165,9 @@ export default function App() {
     } catch (e) {
       // proceed with UI update even if persistence fails
     }
-    const today = new Date().toISOString().split('T')[0];
-    setFiles(prev => prev.map(f => f.id === fileId ? { ...f, title: newTitle, updated_date: today } : f));
+    setFiles(prev => prev.map(f => f.id === fileId ? { ...f, title: newTitle } : f));
     if (selectedFile?.id === fileId) {
-      setSelectedFile(prev => ({ ...prev, title: newTitle, updated_date: today }));
+      setSelectedFile(prev => ({ ...prev, title: newTitle }));
     }
   };
 
@@ -284,7 +283,7 @@ export default function App() {
             <PDFViewer
               path={null}
               message="לא נבחר מסמך"
-              subtitle="בחר מסמך מהרשימה כדי להתחיל"
+              subtitle="כדי להתחיל לעבוד, בחר את המסמך הרצוי מהרשימה"
             />
           </div>
         ) : (

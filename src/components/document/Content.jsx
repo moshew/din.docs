@@ -20,7 +20,7 @@ export function Content({
 }) {
   return (
     <div className="flex-1 overflow-y-auto scrollable-container">
-      <div className="p-3 space-y-6">
+      <div className="py-3 pl-2 pr-4 space-y-6">
         <div className="pt-3">
           <h3 className="text-xs font-semibold text-[#605e5c] uppercase tracking-wider text-right mb-2">
             מסמך ראשי
