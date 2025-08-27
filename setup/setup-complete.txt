@@ -1,20 +1,20 @@
-התקנה הושלמה בהצלחה!
+Installation completed successfully!
 
-Din.Docs הותקן בהצלחה במחשב שלך.
+Din.Docs has been successfully installed on your computer.
 
-מה עכשיו?
+What's next?
 
-1. לחץ על "סיום" כדי לסגור את אשף ההתקנה
-2. תוכל להפעיל את Din.Docs מתפריט התחלה או מקיצור הדרך בשולחן העבודה (אם נבחר)
-3. בהפעלה ראשונה, ייתכן שתתבקש להגדיר את נתיבי התיקיות הראשיים
+1. Click "Finish" to close the installation wizard
+2. You can launch Din.Docs from the Start menu or desktop shortcut (if selected)
+3. On first launch, you may be asked to configure the main folder paths
 
-עצות לשימוש ראשוני:
-• Din.Docs יאפשר לך לסרוק ולארגן את קבצי ה-PDF הקיימים במחשב
-• תוכל לקשר קבצי PDF לפתיחה אוטומטית ב-Din.Docs דרך הגדרות המערכת
-• השתמש בתכונת החיפוש כדי למצוא מסמכים במהירות
+Tips for initial use:
+• Din.Docs will allow you to scan and organize existing PDF files on your computer
+• You can associate PDF files to automatically open with Din.Docs through system settings
+• Use the search feature to quickly find documents
 
-תודה שבחרת ב-Din.Docs!
+Thank you for choosing Din.Docs!
 
-לתמיכה טכנית או שאלות, פנה אלינו דרך האתר או ה-GitHub Repository.
+For technical support or questions, contact us through our website or GitHub Repository.
 
-בהצלחה!
+Good luck!

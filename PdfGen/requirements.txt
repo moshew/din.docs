@@ -1,0 +1,6 @@
+docx2pdf
+fpdf2
+PyPDF2
+arabic-reshaper
+python-bidi
+reportlab

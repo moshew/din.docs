@@ -4,9 +4,10 @@ node_modules
 .pnp.js
 
 # Production
-srv
+./srv
 dist
 dist_electron
+dist_installer
 build
 
 # Environment files

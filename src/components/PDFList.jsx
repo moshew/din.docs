@@ -250,7 +250,7 @@ export function PDFList({
                   value={newFileName}
                   onChange={(e) => setNewFileName(e.target.value)}
                   placeholder="הכנס שם מסמך"
-                  className="flex-1 min-w-0 px-3 py-1.5 bg-white border border-[#0078d4] text-sm focus:outline-none focus:ring-1 focus:ring-[#0078d4] text-right rounded"
+                  className="flex-1 min-w-0 px-3 py-1.5 bg-white border border-[#0078d4] text-sm focus:outline-none text-right rounded"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') handleAddNew();
                     if (e.key === 'Escape') {
@@ -263,7 +263,7 @@ export function PDFList({
                 <button
                   onClick={handleAddNew}
                   title="הוסף מסמך"
-                  className="shrink-0 p-1.5 bg-[#0078d4] text-white hover:bg-[#106ebe] transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-[#0078d4] focus:ring-offset-2 rounded"
+                  className="shrink-0 p-1.5 bg-[#0078d4] text-white hover:bg-[#106ebe] transition-colors duration-300 focus:outline-none rounded"
                 >
                   <Check className="w-5 h-5" />
                 </button>
@@ -273,7 +273,7 @@ export function PDFList({
                     setNewFileName('');
                   }}
                   title="בטל"
-                  className="shrink-0 p-1.5 border border-[#8a8886] text-[#323130] hover:bg-[#f3f2f1] transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-[#0078d4] focus:ring-offset-2 rounded"
+                  className="shrink-0 p-1.5 border border-[#8a8886] text-[#323130] hover:bg-[#f3f2f1] transition-colors duration-300 focus:outline-none rounded"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -286,7 +286,7 @@ export function PDFList({
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-300 ${
                     isEditMode 
                       ? 'bg-transparent text-[#a19f9d] cursor-not-allowed opacity-50'
-                      : 'bg-[#0078d4] text-white hover:bg-[#106ebe] focus:outline-none focus:ring-2 focus:ring-[#0078d4] focus:ring-offset-2'
+                      : 'bg-[#0078d4] text-white hover:bg-[#106ebe] focus:outline-none'
                   }`}
                 >
                   <Plus className="w-4 h-4" />

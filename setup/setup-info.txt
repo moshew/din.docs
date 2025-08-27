@@ -1,21 +1,21 @@
-Din.Docs - מערכת ניהול מסמכים ו-PDF
+Din.Docs - Document and PDF Management System
 
-ברוכים הבאים לאשף ההתקנה של Din.Docs!
+Welcome to the Din.Docs Setup Wizard!
 
-Din.Docs הוא יישום מתקדם לניהול מסמכים וקבצי PDF המאפשר:
+Din.Docs is an advanced document and PDF management application that enables:
 
-• צפייה ועריכת קבצי PDF בצורה נוחה ומהירה
-• ארגון וקטלוג מסמכים במערכת קבצים מסודרת  
-• חיפוש מתקדם במסמכים
-• יצירה ועריכה של מסמכים חדשים
-• תמיכה מלאה בעברית ובשפות נוספות
+• Viewing and editing PDF files comfortably and quickly
+• Organizing and cataloging documents in an organized file system
+• Advanced document search capabilities
+• Creating and editing new documents
+• Full support for Hebrew and other languages
 
-אשף זה ידריך אותך בתהליך ההתקנה של Din.Docs במחשב שלך.
+This wizard will guide you through the installation process of Din.Docs on your computer.
 
-דרישות מערכת מינימליות:
-• Windows 10 או גרסה חדשה יותר
-• 4GB זיכרון RAM
-• 500MB שטח פנוי בדיסק הקשיח
-• מעבד 64-bit
+Minimum system requirements:
+• Windows 10 or newer
+• 4GB RAM memory
+• 500MB free disk space
+• 64-bit processor
 
-לחץ "הבא" כדי להמשיך עם ההתקנה.
+Click "Next" to continue with the installation.

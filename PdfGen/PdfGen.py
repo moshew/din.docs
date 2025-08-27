@@ -5,13 +5,13 @@ import sys
 import json
 import shutil
 import datetime
+import tempfile
 
 from docx2pdf import convert
 from fpdf import FPDF, HTMLMixin
 from fpdf.fonts import FontFace
 from fpdf.enums import XPos, YPos
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
-from hebrew_numbers import int_to_gematria
 from arabic_reshaper import reshape
 from bidi.algorithm import get_display
 
@@ -73,9 +73,9 @@ def generate(fifo, docs):
   if "output" not in docs or not isinstance(docs["output"], dict) or "path" not in docs["output"] or not docs["output"]["path"].endswith(".pdf"):
     return {"status": "error", "msg": "קובץ הפלט לא תקין"}
 
-  temp_dir = "temp"
+  # יצירת תיקיית temp בתיקיית המשתמש או בתיקיית temp של המערכת
+  temp_dir = tempfile.mkdtemp(prefix="dindocs_")
   result = {"status": "success"}
-  os.makedirs(temp_dir, exist_ok=True)
 
   pdfs = []
   current_page = 0
@@ -207,7 +207,10 @@ def generate(fifo, docs):
 
   #current_step += 1
   #send_message("מוחק קבצים זמניים", "saving", current_step)
-  shutil.rmtree(temp_dir)
+  try:
+    shutil.rmtree(temp_dir)
+  except:
+    pass  # אם יש בעיה במחיקת התיקייה הזמנית, זה לא צריך לקרוס את התוכנית
   return result;
 
 if __name__ == "__main__":

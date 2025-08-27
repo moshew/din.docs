@@ -12,7 +12,7 @@ DefaultDirName={autopf}\Din.Docs
 DefaultGroupName=Din.Docs
 OutputDir=..\dist_installer
 OutputBaseFilename=Din.Docs-Setup-1.0.0
-SetupIconFile=..\public\app_icon-256.png
+SetupIconFile=..\public\favicon.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -30,18 +30,17 @@ UninstallDisplayIcon={app}\Din.Docs.exe
 UninstallDisplayName=Din.Docs
 UninstallFilesDir={app}
 
-; Visual appearance
-WizardImageFile=setup-banner.bmp
-WizardSmallImageFile=setup-icon.bmp
+; Visual appearance (optional - uncomment and add image files if desired)
+; WizardImageFile=setup-banner.bmp
+; WizardSmallImageFile=setup-icon.bmp
 
 [Languages]
-Name: "hebrew"; MessagesFile: "compiler:Languages\Hebrew.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 6.1
-Name: "associatefiles"; Description: "קשר קבצי PDF עם Din.Docs"; GroupDescription: "קשרי קבצים:"; Flags: unchecked
+Name: "associatefiles"; Description: "Associate PDF files with Din.Docs"; GroupDescription: "File associations:"; Flags: unchecked
 
 [Files]
 ; Main application files
@@ -68,7 +67,7 @@ Filename: "{app}\Din.Docs.exe"; Description: "{cm:LaunchProgram,Din.Docs}"; Flag
 Type: filesandordirs; Name: "{app}"
 
 [Code]
-// Custom messages in Hebrew
+// Custom initialization functions
 function InitializeSetup(): Boolean;
 begin
   Result := True;
@@ -89,13 +88,13 @@ var
 begin
   if CheckForMutexes('DinDocsAppMutex') then
   begin
-    if MsgBox('Din.Docs פועל כעת. יש לסגור את התוכנה לפני המשך ההתקנה.' + #13#10 + 'האם ברצונך לסגור את התוכנה ולהמשיך?', 
+    if MsgBox('Din.Docs is currently running. Please close the application before continuing with installation.' + #13#10 + 'Would you like to close the application and continue?', 
               mbConfirmation, MB_YESNO or MB_DEFBUTTON2) = IDYES then
     begin
       // Try to close the application gracefully
       if not Exec('taskkill', '/f /im "Din.Docs.exe"', '', SW_HIDE, ewWaitUntilTerminated, ErrorCode) then
       begin
-        MsgBox('לא ניתן לסגור את התוכנה. אנא סגר את Din.Docs באופן ידני ונסה שוב.', mbError, MB_OK);
+        MsgBox('Unable to close the application. Please close Din.Docs manually and try again.', mbError, MB_OK);
         Result := False;
         Exit;
       end;

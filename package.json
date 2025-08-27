@@ -1,5 +1,5 @@
 {
-  "name": "din-docs",
+  "name": "din.docs",
   "main": "public/electron.js",
   "description": "Din.Docs - Document and PDF management application",
   "author": "Din.Docs Team",
@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "electron": "set ELECTRON_START_URL=http://localhost:3000 && electron .",
-		"package": "electron-builder --win --publish never"
+		"package": "electron-builder --win --dir --publish never"
   },
   "dependencies": {
     "@trodi/electron-splashscreen": "^1.0.2",
