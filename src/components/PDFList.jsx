@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Trash2, Plus, Check, X, Pencil } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Trash2, Plus, Check, X, Pencil, ChevronDown, Copy, FileText } from 'lucide-react';
 
 
 
@@ -19,6 +19,10 @@ export function PDFList({
   const [deleteConfirmation, setDeleteConfirmation] = useState(null);
   const [editingFileId, setEditingFileId] = useState(null);
   const [editedFileName, setEditedFileName] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
+  const [duplicateFileName, setDuplicateFileName] = useState('');
+  const dropdownRef = useRef(null);
 
   const handleAddNew = async () => {
     if (newFileName.trim()) {
@@ -97,6 +101,50 @@ export function PDFList({
       handleCancelEdit(event);
     }
   };
+
+  const handleDuplicateDocument = () => {
+    setIsDropdownOpen(false);
+    setIsDuplicating(true);
+    setDuplicateFileName(`${selectedFile.title} - עותק`);
+  };
+
+  const handleDuplicateSubmit = async () => {
+    if (duplicateFileName.trim() && selectedFile) {
+      try {
+        const result = await window.ipcRenderer.invoke("duplicateCase", {
+          title: duplicateFileName.trim(),
+          caseToDuplicate: selectedFile.id
+        });
+        
+        if (result.status === 'success') {
+          const newFile = {
+            id: result.id,
+            title: duplicateFileName.trim(),
+            updated_date: new Date().toISOString().split('T')[0]
+          };
+          onSelectFile(newFile);
+          setDuplicateFileName('');
+          setIsDuplicating(false);
+        }
+      } catch (error) {
+        console.error('Failed to duplicate case:', error);
+      }
+    }
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const formatDate = (date) => {
     if (!date) return null;
@@ -243,34 +291,50 @@ export function PDFList({
     <div className="h-full flex flex-col bg-[#FBFDFF]">
       <div className="flex-1 overflow-y-scroll overflow-x-hidden pdf-list-scroll pr-1">
           <div className="px-3 py-2 sticky top-0 bg-[#FBFDFF] z-10">
-            {isAddingNew ? (
+            {isAddingNew || isDuplicating ? (
               <div className="flex items-center gap-1">
                 <input
                   type="text"
-                  value={newFileName}
-                  onChange={(e) => setNewFileName(e.target.value)}
-                  placeholder="הכנס שם מסמך"
+                  value={isDuplicating ? duplicateFileName : newFileName}
+                  onChange={(e) => isDuplicating ? setDuplicateFileName(e.target.value) : setNewFileName(e.target.value)}
+                  placeholder={isDuplicating ? "הכנס שם מסמך לשכפול" : "הכנס שם מסמך"}
                   className="flex-1 min-w-0 px-3 py-1.5 bg-white border border-[#0078d4] text-sm focus:outline-none text-right rounded"
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleAddNew();
+                    if (e.key === 'Enter') {
+                      if (isDuplicating) {
+                        handleDuplicateSubmit();
+                      } else {
+                        handleAddNew();
+                      }
+                    }
                     if (e.key === 'Escape') {
-                      setIsAddingNew(false);
-                      setNewFileName('');
+                      if (isDuplicating) {
+                        setIsDuplicating(false);
+                        setDuplicateFileName('');
+                      } else {
+                        setIsAddingNew(false);
+                        setNewFileName('');
+                      }
                     }
                   }}
                   autoFocus
                 />
                 <button
-                  onClick={handleAddNew}
-                  title="הוסף מסמך"
+                  onClick={isDuplicating ? handleDuplicateSubmit : handleAddNew}
+                  title={isDuplicating ? "שכפל מסמך" : "הוסף מסמך"}
                   className="shrink-0 p-1.5 bg-[#0078d4] text-white hover:bg-[#106ebe] transition-colors duration-300 focus:outline-none rounded"
                 >
                   <Check className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => {
-                    setIsAddingNew(false);
-                    setNewFileName('');
+                    if (isDuplicating) {
+                      setIsDuplicating(false);
+                      setDuplicateFileName('');
+                    } else {
+                      setIsAddingNew(false);
+                      setNewFileName('');
+                    }
                   }}
                   title="בטל"
                   className="shrink-0 p-1.5 border border-[#8a8886] text-[#323130] hover:bg-[#f3f2f1] transition-colors duration-300 focus:outline-none rounded"
@@ -280,18 +344,59 @@ export function PDFList({
               </div>
             ) : (
               <div className="flex justify-start -mr-1.5">
-                <button
-                  onClick={() => !isEditMode && setIsAddingNew(true)}
-                  disabled={isEditMode}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-300 ${
+                <div ref={dropdownRef} className="relative">
+                  {/* Split Button Container */}
+                  <div className={`flex rounded-md overflow-hidden ${
                     isEditMode 
-                      ? 'bg-transparent text-[#a19f9d] cursor-not-allowed opacity-50'
-                      : 'bg-[#0078d4] text-white hover:bg-[#106ebe] focus:outline-none'
-                  }`}
-                >
-                  <Plus className="w-4 h-4" />
-                  מסמך חדש
-                </button>
+                      ? 'opacity-50'
+                      : ''
+                  }`}>
+                    {/* Main Button */}
+                    <button
+                      onClick={() => !isEditMode && setIsAddingNew(true)}
+                      disabled={isEditMode}
+                      className={`inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors duration-300 ${
+                        isEditMode 
+                          ? 'bg-transparent text-[#a19f9d] cursor-not-allowed'
+                          : 'bg-[#0078d4] text-white hover:bg-[#106ebe] focus:outline-none'
+                      }`}
+                    >
+                      <FileText className="w-4 h-4" />
+                      מסמך חדש
+                    </button>
+                    
+                    {/* Dropdown Button */}
+                    <button
+                      onClick={() => !isEditMode && selectedFile && setIsDropdownOpen(!isDropdownOpen)}
+                      disabled={isEditMode || !selectedFile}
+                      className={`px-2 py-1.5 border-r border-[#ffffff33] transition-colors duration-300 ${
+                        isEditMode || !selectedFile
+                          ? 'bg-[#0078d4]/20 cursor-not-allowed'
+                          : 'bg-[#0078d4] text-white hover:bg-[#106ebe] focus:outline-none'
+                      }`}
+                      title={selectedFile ? "אפשרויות נוספות" : "בחר מסמך תחילה"}
+                    >
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${
+                        isDropdownOpen ? 'rotate-180' : ''
+                      } ${
+                        isEditMode || !selectedFile ? 'text-[#0078d4]' : 'text-white'
+                      }`} />
+                    </button>
+                  </div>
+
+                  {/* Dropdown Menu */}
+                  {isDropdownOpen && !isEditMode && selectedFile && (
+                    <div className="absolute top-full left-0 mt-0 bg-white border border-[#e1dfdd] rounded-md shadow-lg z-20" style={{width: '100%'}}>
+                      <button
+                        onClick={handleDuplicateDocument}
+                        className="w-full px-3 py-1.5 text-sm text-right bg-[#0078d4] text-white hover:bg-[#106ebe] transition-colors duration-150 flex items-center gap-2 rounded-md"
+                      >
+                        <Copy className="w-4 h-4" />
+                        <span>שכפל מסמך</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

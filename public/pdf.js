@@ -7,14 +7,14 @@ import { spawn } from 'child_process';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const executablePath = path.join(__dirname, isDev ? '' : '../', '../srv/PdfGen.exe');
-//const executablePath = path.join(__dirname, isDev ? '' : '../', '../PdfGen/PdfGen.py');
+//const executablePath = path.join(__dirname, isDev ? '' : '../', '../srv/PdfGen.exe');
+const executablePath = path.join(__dirname, isDev ? '' : '../', '../PdfGen/PdfGen.py');
 const PIPE_PATH = "\\\\.\\pipe\\pdfpipe";
 
 function generate(mainWindow, files) {
 	files = typeof files === 'string' ? files : JSON.stringify(files)
-  const app = spawn(executablePath, [files]);
-  //const app = spawn('python', [executablePath, files]);
+  //const app = spawn(executablePath, [files]);
+  const app = spawn('python', [executablePath, files]);
   app.stdout.on('data', data => {
     mainWindow.webContents.send("pdfGenFinished", {detail: JSON.parse(data.toString())});
   });

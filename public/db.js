@@ -36,6 +36,34 @@ function registerHandlers() {
     return { status: 'success', cases: db.cases, id };
   });
 
+  ipcMain.handle('duplicateCase', async (event, duplicateData) => {
+    const id = generateKey();
+    const title = duplicateData.title;
+    const caseToDuplicate = duplicateData.caseToDuplicate;
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    
+    // Find the original case to duplicate
+    const originalCase = getById(db.case, caseToDuplicate);
+    
+    // Create new case entry in cases list
+    db.cases.push({ id, title, ud: today });
+    
+    // Create new case with copied files from original
+    const newCase = {
+      id,
+      title,
+      path: '',
+      files: {
+        main: originalCase?.files?.main || '',
+        attachments: originalCase?.files?.attachments ? [...originalCase.files.attachments] : []
+      }
+    };
+    
+    db.case.push(newCase);
+    fs.writeFileSync(dbFilename, JSON.stringify(db));
+    return { status: 'success', cases: db.cases, id };
+  });
+
   ipcMain.handle('editCase', async (event, caseToEdit) => {
     const title = caseToEdit.title;
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
