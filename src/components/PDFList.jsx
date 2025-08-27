@@ -24,6 +24,27 @@ export function PDFList({
   const [duplicateFileName, setDuplicateFileName] = useState('');
   const dropdownRef = useRef(null);
 
+  // Helper functions for consistent state reset
+  const resetNewDocumentState = () => {
+    setIsAddingNew(false);
+    setNewFileName('');
+    setIsDropdownOpen(false);
+  };
+
+  const resetDuplicateState = () => {
+    setIsDuplicating(false);
+    setDuplicateFileName('');
+    setIsDropdownOpen(false);
+  };
+
+  const resetCurrentOperation = () => {
+    if (isDuplicating) {
+      resetDuplicateState();
+    } else {
+      resetNewDocumentState();
+    }
+  };
+
   const handleAddNew = async () => {
     if (newFileName.trim()) {
       try {
@@ -38,11 +59,11 @@ export function PDFList({
             updated_date: new Date().toISOString().split('T')[0]
           };
           onSelectFile(newFile);
-          setNewFileName('');
-          setIsAddingNew(false);
+          resetNewDocumentState();
         }
       } catch (error) {
         console.error('Failed to create new case:', error);
+        resetNewDocumentState();
       }
     }
   };
@@ -123,8 +144,7 @@ export function PDFList({
             updated_date: new Date().toISOString().split('T')[0]
           };
           onSelectFile(newFile);
-          setDuplicateFileName('');
-          setIsDuplicating(false);
+          resetDuplicateState();
         }
       } catch (error) {
         console.error('Failed to duplicate case:', error);
@@ -308,13 +328,7 @@ export function PDFList({
                       }
                     }
                     if (e.key === 'Escape') {
-                      if (isDuplicating) {
-                        setIsDuplicating(false);
-                        setDuplicateFileName('');
-                      } else {
-                        setIsAddingNew(false);
-                        setNewFileName('');
-                      }
+                      resetCurrentOperation();
                     }
                   }}
                   autoFocus
@@ -327,15 +341,7 @@ export function PDFList({
                   <Check className="w-5 h-5" />
                 </button>
                 <button
-                  onClick={() => {
-                    if (isDuplicating) {
-                      setIsDuplicating(false);
-                      setDuplicateFileName('');
-                    } else {
-                      setIsAddingNew(false);
-                      setNewFileName('');
-                    }
-                  }}
+                  onClick={resetCurrentOperation}
                   title="בטל"
                   className="shrink-0 p-1.5 border border-[#8a8886] text-[#323130] hover:bg-[#f3f2f1] transition-colors duration-300 focus:outline-none rounded"
                 >

@@ -29,8 +29,7 @@ function registerHandlers() {
   ipcMain.handle('newCase', async (event, caseToAdd) => {
     const id = generateKey();
     const title = caseToAdd.title;
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-    db.cases.push({ id, title, ud: today });
+    db.cases.push({ id, title });
     db.case.push({ id, title, path: '', files: { main: '', attachments: [] } });
     fs.writeFileSync(dbFilename, JSON.stringify(db));
     return { status: 'success', cases: db.cases, id };
@@ -40,13 +39,12 @@ function registerHandlers() {
     const id = generateKey();
     const title = duplicateData.title;
     const caseToDuplicate = duplicateData.caseToDuplicate;
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
     
     // Find the original case to duplicate
     const originalCase = getById(db.case, caseToDuplicate);
     
     // Create new case entry in cases list
-    db.cases.push({ id, title, ud: today });
+    db.cases.push({ id, title });
     
     // Create new case with copied files from original
     const newCase = {
@@ -66,11 +64,9 @@ function registerHandlers() {
 
   ipcMain.handle('editCase', async (event, caseToEdit) => {
     const title = caseToEdit.title;
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
     const lc = getById(db.cases, caseToEdit.id);
     if (lc) {
       lc.title = title;
-      lc.ud = today;
     }
     const full = getById(db.case, caseToEdit.id);
     if (full) full.title = title;
@@ -113,16 +109,16 @@ function registerHandlers() {
       if (caseToSave.files) {
         current.files = caseToSave.files;
       }
-      if (typeof caseToSave.path === 'string') current.path = caseToSave.path;
-      if (typeof caseToSave.ud === 'string') current.ud = caseToSave.ud;
+      const lc = getById(db.cases, caseToSave.id);
       if (typeof caseToSave.title === 'string') {
         current.title = caseToSave.title;
-        const lc = getById(db.cases, caseToSave.id);
-        if (lc) {
-          lc.title = caseToSave.title;
-          lc.ud = new Date().toISOString().split('T')[0]; // Update modified date
-        }
+        lc.title = caseToSave.title;
       }
+      if (typeof caseToSave.ud === 'string') {
+        current.ud = caseToSave.ud;
+        lc.ud = caseToSave.ud;
+      }
+      if (typeof caseToSave.path === 'string') current.path = caseToSave.path;
     }
     fs.writeFileSync(dbFilename, JSON.stringify(db));
     return { status: 'success' };

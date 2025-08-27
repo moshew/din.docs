@@ -68,18 +68,12 @@ export default function App() {
           name: attachment.title,
           path: attachment.path
         })) : [],
-        outputFile: outputPath ? {
-          name: getFileNameWithoutExt(outputPath),
-          path: outputPath
-        } : null
+        outputFile: outputPath ? createOutputFile(getFileNameWithoutExt(outputPath), outputPath) : null
       };
 
       setFiles(prev => {
         if (prev.find(f => f.id === file.id)) {
-          return prev.map(f => f.id === file.id ? {
-            ...f,
-            updated_date: updatedFile.updated_date
-          } : f);
+          return prev.map(f => f.id === file.id ? updatedFile : f);
         }
         return [...prev, updatedFile];
       });
@@ -100,6 +94,17 @@ export default function App() {
     }
   };
 
+  // Helper functions for state management
+  const updateSelectedFile = (updatedFile) => {
+    setFiles(prev => prev.map(f => f.id === selectedFile.id ? updatedFile : f));
+    setSelectedFile(updatedFile);
+  };
+
+  const createOutputFile = (name, path) => ({
+    name: name,
+    path: path
+  });
+
   const handleDeleteFile = (fileId, event) => {
     event.stopPropagation();
     setFiles(prev => prev.filter(f => f.id !== fileId));
@@ -116,8 +121,7 @@ export default function App() {
         mainFile: file
       };
 
-      setFiles(prev => prev.map(f => f.id === selectedFile.id ? updatedFile : f));
-      setSelectedFile(updatedFile);
+      updateSelectedFile(updatedFile);
     }
   };
 
@@ -127,8 +131,7 @@ export default function App() {
       ...selectedFile,
       attachments: [...selectedFile.attachments, file]
     };
-    setFiles(prev => prev.map(f => f.id === selectedFile.id ? updatedFile : f));
-    setSelectedFile(updatedFile);
+    updateSelectedFile(updatedFile);
   };
 
   const handleAttachmentRemove = async (index) => {
@@ -138,8 +141,7 @@ export default function App() {
         attachments: selectedFile.attachments.filter((_, i) => i !== index)
       };
 
-      setFiles(prev => prev.map(f => f.id === selectedFile.id ? updatedFile : f));
-      setSelectedFile(updatedFile);
+      updateSelectedFile(updatedFile);
       if (selectedPdf === selectedFile.attachments[index]) {
         setSelectedPdf(updatedFile.outputFile);
       }
@@ -153,8 +155,7 @@ export default function App() {
         attachments: newAttachments
       };
 
-      setFiles(prev => prev.map(f => f.id === selectedFile.id ? updatedFile : f));
-      setSelectedFile(updatedFile);
+      updateSelectedFile(updatedFile);
     }
   };
 
@@ -179,10 +180,25 @@ export default function App() {
 
     setSelectedPdf(file);
     if (file.updated_date && selectedFile) {
-      setFiles(prev => prev.map(f => f.id === selectedFile.id ? {
-        ...f,
-        updated_date: file.updated_date
-      } : f));
+      const updatedFile = {
+        ...selectedFile,
+        updated_date: file.updated_date,
+        // If this is a new PDF file (has forceTimestamp), update outputFile
+        ...(file.forceTimestamp && {
+          outputFile: createOutputFile(file.name, file.path)
+        })
+      };
+      
+      // Update both files list and selectedFile if outputFile changed
+      if (file.forceTimestamp) {
+        updateSelectedFile(updatedFile);
+      } else {
+        // Only update files list for date change
+        setFiles(prev => prev.map(f => f.id === selectedFile.id ? {
+          ...f,
+          updated_date: file.updated_date
+        } : f));
+      }
     }
   };
 
