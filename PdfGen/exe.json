@@ -53,10 +53,7 @@
    "optionDest": "bootloader_ignore_signals",
    "value": false
   },
-  {
-   "optionDest": "datas",
-   "value": "C:/din.docs/pdfGen/hebrew-special-numbers-default.yml;."
-  },
+
   {
    "optionDest": "datas",
    "value": "C:/din.docs/pdfGen/fonts;fonts/"

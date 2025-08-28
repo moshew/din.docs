@@ -13,7 +13,8 @@ from fpdf.fonts import FontFace
 from fpdf.enums import XPos, YPos
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
 from arabic_reshaper import reshape
-from bidi.algorithm import get_display
+from bidi_display import get_display
+#from bidi.algorithm import get_display
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -24,6 +25,7 @@ class MyFPDF(FPDF, HTMLMixin):
   pass
 
 def docx_convert(doc_path, pdf_dir):
+  """Convert DOCX file to PDF"""
   doc_file = os.path.basename(doc_path)
   pre, ext = os.path.splitext(doc_file)
   pdf_file = pre + ".pdf"
@@ -34,6 +36,7 @@ def docx_convert(doc_path, pdf_dir):
   return pdf_path
 
 def page_number(index, draft=False):
+  """Create a page with page number and optional draft watermark"""
   packet = io.BytesIO()
   can = canvas.Canvas(packet, pagesize=A4)
   page_width, page_height = A4
@@ -46,6 +49,7 @@ def page_number(index, draft=False):
   return PdfReader(packet).pages[0]
 
 def rtl_line(line, max_len=27):
+  """Process RTL text line with word wrapping and BiDi display"""
   lines=[]
   line_num=-1
   char_num=max_len
@@ -64,16 +68,18 @@ def rtl_line(line, max_len=27):
   return get_display(reshape(new_line))
 
 def send_message(fifo, message, phase, step, total):
+  """Send progress message through FIFO pipe"""
   if fifo:
     status = {'message': message, 'phase': phase, 'step': step, 'total': total}
     status_str = json.dumps(status)
     os.write(fifo, bytes(status_str, 'utf-8'))
   
 def generate(fifo, docs):
+  """Main PDF generation function"""
   if "output" not in docs or not isinstance(docs["output"], dict) or "path" not in docs["output"] or not docs["output"]["path"].endswith(".pdf"):
     return {"status": "error", "msg": "קובץ הפלט לא תקין"}
 
-  # יצירת תיקיית temp בתיקיית המשתמש או בתיקיית temp של המערכת
+  # Create temp directory in user's temp folder or system temp
   temp_dir = tempfile.mkdtemp(prefix="dindocs_")
   result = {"status": "success"}
 
@@ -131,7 +137,7 @@ def generate(fifo, docs):
         attachment_filename = "_" + os.path.basename(attachment_filename)
         appx_path = os.path.join(temp_dir, attachment_filename)
         pdf.output(appx_path)
-        #pdf.close()
+        # pdf.close() - not needed in newer versions
 
         pdfs.append(appx_path)
         appx_path = attachment["path"]
@@ -210,7 +216,7 @@ def generate(fifo, docs):
   try:
     shutil.rmtree(temp_dir)
   except:
-    pass  # אם יש בעיה במחיקת התיקייה הזמנית, זה לא צריך לקרוס את התוכנית
+    pass  # If there's an issue deleting temp folder, don't crash the program
   return result;
 
 if __name__ == "__main__":
@@ -218,7 +224,7 @@ if __name__ == "__main__":
   result = {"status": "error", "msg": "תקלה בפרמטרים"}
   try:
     if getattr(sys, 'frozen', False):
-      base_dir = sys._MEIPASS
+      base_dir = os.path.dirname(sys.executable)
     else:
       base_dir = os.path.dirname(os.path.abspath(__file__))
 

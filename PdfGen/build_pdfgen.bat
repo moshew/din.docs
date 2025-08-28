@@ -7,9 +7,8 @@ REM --- Settings (edit if needed) ---
 set APP_NAME=PdfGen
 set SCRIPT_PATH=.\PdfGen.py
 set ICON_PATH=.\favicon.ico
-set DATA1=.\hebrew-special-numbers-default.yml;.
-set DATA2=.\fonts;fonts/
-set DATA3=.\assets;assets/
+set FONTS_DATA=.\fonts;fonts/
+set ASSETS_DATA=.\assets;assets/
 set OUT_DIR=..\srv
 set WORK_DIR=.\build
 
@@ -22,9 +21,8 @@ REM --- Run PyInstaller ---
 echo Running PyInstaller...
 pyinstaller --noconfirm --windowed --name "%APP_NAME%" --icon "%ICON_PATH%" ^
   --distpath "%OUT_DIR%" --workpath "%WORK_DIR%" ^
-  --add-data "%DATA1%" ^
-  --add-data "%DATA2%" ^
-  --add-data "%DATA3%" ^
+  --add-data "%FONTS_DATA%" ^
+  --add-data "%ASSETS_DATA%" ^
   "%SCRIPT_PATH%"
 if errorlevel 1 (
   echo [ERROR] PyInstaller build failed.
