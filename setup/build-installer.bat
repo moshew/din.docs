@@ -67,5 +67,3 @@ if errorlevel 1 (
     echo You can now distribute this installer file.
     echo.
 )
-
-pause

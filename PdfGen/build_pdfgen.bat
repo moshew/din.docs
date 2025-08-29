@@ -57,4 +57,3 @@ echo.
 echo [OK] Build completed.
 echo Output folder (flattened): "%OUT_DIR%"
 echo.
-pause
