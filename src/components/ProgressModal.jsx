@@ -61,10 +61,11 @@ export function ProgressModal({
     switch (phase) {
       case 'converting':
         return {
-          icon: FileText,
+          icon: Loader2,
           title: 'ממיר מסמך',
           color: 'from-blue-500 to-blue-700',
-          bgColor: 'bg-blue-100'
+          bgColor: 'bg-blue-100',
+          animate: true
         };
       case 'merging':
         return {

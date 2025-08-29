@@ -10,6 +10,9 @@ dist_electron
 dist_installer
 build
 
+# Python cache
+PdfGen/__pycache__
+
 # Environment files
 .env
 .env.local
