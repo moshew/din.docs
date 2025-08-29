@@ -4,59 +4,59 @@ setlocal enabledelayedexpansion
 
 echo.
 echo Starting Nuitka build with correct dependencies...
+echo.
+echo *** IMPORTANT ***
+echo If Windows Defender shows warnings during build, you can safely ignore them.
+echo Nuitka creates new executable files which may trigger false positives.
+echo Consider adding an exclusion for this directory in Windows Defender.
+echo.
 
 REM --- Settings ---
 set APP_NAME=PdfGen
 set SCRIPT_PATH=.\PdfGen.py
 set OUT_DIR=..\srv
 
-REM --- Clean previous build ---
-if exist "%OUT_DIR%\%APP_NAME%.exe" (
-  echo Cleaning previous build from %OUT_DIR%...
-  del /Q "%OUT_DIR%\*.exe" 2>nul
-  del /Q "%OUT_DIR%\*.dll" 2>nul
-  del /Q "%OUT_DIR%\*.pyd" 2>nul
+REM --- Create srv directory if it doesn't exist ---
+if not exist "%OUT_DIR%" (
+  echo Creating srv directory...
+  mkdir "%OUT_DIR%"
 )
 
-if not exist "%OUT_DIR%" mkdir "%OUT_DIR%"
+REM --- Clean previous executable if exists ---
+if exist "%OUT_DIR%\%APP_NAME%.exe" (
+  echo Removing existing PdfGen.exe...
+  del "%OUT_DIR%\%APP_NAME%.exe"
+)
 
 nuitka --standalone ^
+  --mingw64 ^
+  --lto=yes ^
   --windows-console-mode=disable ^
-  --disable-console ^
   --assume-yes-for-downloads ^
   --remove-output ^
   --follow-imports ^
   --no-prefer-source-code ^
-  --windows-company-name="din-onlime.co.il" ^
+  --windows-company-name="din-online.co.il" ^
   --windows-product-name="Din.Docs" ^
-  --windows-file-version="1.0.0" ^
-  --windows-product-version="1.0.0" ^
+  --windows-file-version="1.0.0.0" ^
+  --windows-product-version="1.0.0.0" ^
   --windows-file-description="Din.Docs - Legal Documents Generator" ^
-  --output-dir="%OUT_DIR%" ^
-  --output-filename="%APP_NAME%.exe" ^
   --windows-icon-from-ico=".\favicon.ico" ^
   --include-data-dir=".\fonts"="fonts" ^
   --include-data-dir=".\assets"="assets" ^
+  --output-filename="%APP_NAME%" ^
   "%SCRIPT_PATH%"
+
+echo Build completed!
 
 if errorlevel 1 (
   echo [ERROR] Nuitka build failed.
-  pause
   exit /b 1
-)
-
-REM --- Verify build success ---
-if exist "%OUT_DIR%\%APP_NAME%.exe" (
-  echo [SUCCESS] Build completed successfully!
-  echo Output directory: %OUT_DIR%
-  echo Executable: %APP_NAME%.exe
 ) else (
-  echo [ERROR] Build failed - executable not found in %OUT_DIR%
-  pause
-  exit /b 1
+  echo [SUCCESS] Nuitka build completed successfully.
 )
 
 echo.
-echo Output: "%OUT_DIR%\%APP_NAME%.exe"
+echo Final output directory: "%OUT_DIR%\"
+echo Main executable: "%OUT_DIR%\%APP_NAME%.exe"
 echo.
-pause

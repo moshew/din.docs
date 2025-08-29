@@ -67,6 +67,7 @@ def rtl_line(line, max_len=27):
   new_line = new_line[:-1]
   return get_display(reshape(new_line))
 
+
 def send_message(fifo, message, phase, step, total):
   """Send progress message through FIFO pipe"""
   if fifo:
@@ -101,7 +102,7 @@ def generate(fifo, docs):
     main_path = docs["main"]
     if main_path.endswith(".docx"):
       current_step += 1
-      send_message("ממיר מסמך מרכזי לקובץ PDF", "converting", current_step)
+      send_message("ממיר את המסמך הראשי לקובץ PDF", "converting", current_step)
       main_path = docx_convert(main_path, temp_dir)
     pdfs.append(main_path)
     with open(main_path, "rb") as main_file:
@@ -143,7 +144,7 @@ def generate(fifo, docs):
         appx_path = attachment["path"]
         if attachment["path"].endswith(".docx"):
           current_step += 1
-          send_message("ממיר נספח {} לקובץ PDF".format(appx_num), "converting", current_step)
+          send_message("ממיר את נספח {} לקובץ PDF".format(appx_num), "converting", current_step)
           appx_path = docx_convert(appx_path, temp_dir)
         pdfs.append(appx_path)
 
@@ -168,7 +169,7 @@ def generate(fifo, docs):
       with pdf.table(table_data, first_row_as_headings=False, col_widths=(7, 86, 7), text_align="CENTER") as table:
         pass
       pdf.set_font("David", size=12)
-      with pdf.table(toc, first_row_as_headings=False, line_height=2*pdf.font_size, col_widths=(7, 86, 7), text_align=("CENTER", "RIGHT", "CENTER")) as table:
+      with pdf.table(toc, first_row_as_headings=False, line_height=pdf.font_size, col_widths=(7, 86, 7), text_align=("CENTER", "RIGHT", "CENTER"), padding=2) as table:
         pass    
       pdf.output(toc_path)
   
@@ -198,7 +199,7 @@ def generate(fifo, docs):
       page.merge_page(page_number(page_num+1, draft))
       outfile.add_page(page)
     current_step += 1
-    send_message("שומר את המסמך לקובץ \"{}\"".format(output_filename), "saving", current_step)
+    send_message("מפיק את הקובץ הסופי של המסמך המעובד", "saving", current_step)
     with open(output_path, "wb") as fp:
       outfile.write(fp)
       updated_date = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -225,6 +226,9 @@ if __name__ == "__main__":
   try:
     if getattr(sys, 'frozen', False):
       base_dir = os.path.dirname(sys.executable)
+      internal_dir = os.path.join(base_dir, "_internal")
+      if os.path.exists(internal_dir):
+        base_dir = internal_dir
     else:
       base_dir = os.path.dirname(os.path.abspath(__file__))
 

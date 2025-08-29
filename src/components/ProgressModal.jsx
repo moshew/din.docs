@@ -31,7 +31,7 @@ export function ProgressModal({
   }, [selectedFile]);
 
   const totalSteps = total || calculatedTotal;
-  const displayMessage = message || 'מכין ליצירת מסמך...';
+  const displayMessage = message || 'מאתחל את התהליך ליצירת המסמך...';
 
   if (!isOpen) return null;
 
