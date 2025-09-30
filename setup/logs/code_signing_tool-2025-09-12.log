@@ -1,0 +1,32 @@
+21:25:29.644 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Command: sign
+21:25:29.650 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Client ID: kaXTRACNijSWsFdRKg_KAfD3fqrBlzMbWs6TwWHwAn8
+21:25:29.650 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - OAuth2 URL: https://login.ssl.com/oauth2/token
+21:25:29.650 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - CSC Endpoint: https://cs.ssl.com
+21:25:29.650 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - TSA URL: http://ts.ssl.com
+21:25:29.650 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - TSA Legacy URL: null
+21:25:29.650 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Input file path: ..\dist_electron\win-unpacked\Din.Docs.exe
+21:25:29.650 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - File type: exe
+21:25:29.650 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Code format type: pe
+21:25:30.611 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - No credential ID provided in input parameter
+21:25:36.735 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Credential ID retrieved from signatures service: 3065cdc9-3082-4ceb-b388-90550b012b2a
+21:25:37.410 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Subject DN: CN=Moshe Waisman, O=Moshe Waisman, L=Kiryat Motzkin, C=IL
+21:25:37.410 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Issuer DN: CN=SSL.com Code Signing Intermediate CA RSA R1, O=SSL Corp, L=Houston, ST=Texas, C=US
+21:25:37.419 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Certificate expiry: Wed Sep 02 23:22:31 IDT 2026
+21:25:40.858 [main] INFO  com.ssl.code.signing.tool.csc.CscApi - sign hash response: {"signatures":["UDh7k1breTMbcP2dYJeIG3pC8Z3pzvkv3Z5QqTqpaNlKd8teZAEoCOaIigV1xrf8r8Y+E3ErQv1S35xJckeqY5G//xH478LaAoywOrzMKlkTm37Rc6UFIuthBi1BgTegAi9dqS8tvan8KpF6RA72MBDfUA/rfJJlIpNDYqMC+lANYB4CCxoOC/SRkZZYCMk7/lR6uSifmOoIR+QtzloEFBmvo0mNLebPvRbcQd55QTjhAmlDV48CW3fUMBMe+Xnu9S8H2xrX0xLy6jijfgFAMpEPiZeOwTvWG6jHBl/iDmtQ5mIfRuycfdshJeiBhe1cv6lieLVuNVxYtWmY5LxKzBjX/Z+aCbzWcf7VdYcHqMHUcmbvMIHyS0HR9YBzGULIoiA6ZIKDobDMkDINZD3yKqvJhO6CNRANBj46fMitAbTScRn+3FpXGLZzaE937X/wC1O8ZAm8egzjKGQs3Or8L0U3lbJjwoBC0FPdhdZoNJ1802jvqpyk3TJkQh9Q52is"]}
+21:25:40.859 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Signature value: UDh7k1breTMbcP2dYJeIG3pC8Z3pzvkv3Z5QqTqpaNlKd8teZAEoCOaIigV1xrf8r8Y+E3ErQv1S35xJckeqY5G//xH478LaAoywOrzMKlkTm37Rc6UFIuthBi1BgTegAi9dqS8tvan8KpF6RA72MBDfUA/rfJJlIpNDYqMC+lANYB4CCxoOC/SRkZZYCMk7/lR6uSifmOoIR+QtzloEFBmvo0mNLebPvRbcQd55QTjhAmlDV48CW3fUMBMe+Xnu9S8H2xrX0xLy6jijfgFAMpEPiZeOwTvWG6jHBl/iDmtQ5mIfRuycfdshJeiBhe1cv6lieLVuNVxYtWmY5LxKzBjX/Z+aCbzWcf7VdYcHqMHUcmbvMIHyS0HR9YBzGULIoiA6ZIKDobDMkDINZD3yKqvJhO6CNRANBj46fMitAbTScRn+3FpXGLZzaE937X/wC1O8ZAm8egzjKGQs3Or8L0U3lbJjwoBC0FPdhdZoNJ1802jvqpyk3TJkQh9Q52is
+21:27:37.935 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Command: sign
+21:27:37.937 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Client ID: kaXTRACNijSWsFdRKg_KAfD3fqrBlzMbWs6TwWHwAn8
+21:27:37.937 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - OAuth2 URL: https://login.ssl.com/oauth2/token
+21:27:37.937 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - CSC Endpoint: https://cs.ssl.com
+21:27:37.938 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - TSA URL: http://ts.ssl.com
+21:27:37.938 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - TSA Legacy URL: null
+21:27:37.939 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Input file path: ..\dist_installer\Din.Docs-Setup-1.0.0.exe
+21:27:37.939 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - File type: exe
+21:27:37.939 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Code format type: pe
+21:27:39.069 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - No credential ID provided in input parameter
+21:27:44.076 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Credential ID retrieved from signatures service: 3065cdc9-3082-4ceb-b388-90550b012b2a
+21:27:44.791 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Subject DN: CN=Moshe Waisman, O=Moshe Waisman, L=Kiryat Motzkin, C=IL
+21:27:44.792 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Issuer DN: CN=SSL.com Code Signing Intermediate CA RSA R1, O=SSL Corp, L=Houston, ST=Texas, C=US
+21:27:44.794 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Certificate expiry: Wed Sep 02 23:22:31 IDT 2026
+21:27:48.203 [main] INFO  com.ssl.code.signing.tool.csc.CscApi - sign hash response: {"signatures":["I8UKBo86bS0pxgIqZYMfL3e7dNgwv4D8M7R1D+MG65grAz+ueDBmcfizZcvW8uXKyotL7yEdYcFTYKYpM4lNMzqp/4R7gQCWkWurqOjc56+4C2mWWyA+TcNtFAAmq1TZ0tRpcJyNtARX27JREcayPR4gJ9nUeXOSGtRW3CUsn1MsH7tKJOKY5LjIUzRmbAYkpi/Tq92alHbUd0wywWuae3g7JrDoqM9BSjZ8xxxdCcNk6EGWXLHJGBcxEA5dVfBkgYurVfaiCzgRZcF1K7+oo9JsQU/1Y3b4puPeOG/9yKHXC+3qkQb2yacuxQIXw8/QW0TNpnTrTLLk28LIecimN79mbFUERi6NyLHUSCWSCSPg8E2I2vmRG+WqUArvsGZZL+YUQtxM2h5p7Su1IC5H5z0eMQKC8+qaSaF21KpYXy+UrWvrQIw2b3bihtH7Q2bV512VAM1owqy5wkMeJ5eTaN9ZpsXIJrtXQHDpQF5kkEBRebYJ0RPYqWFYOmzH4IAc"]}
+21:27:48.204 [main] INFO  com.ssl.code.signing.tool.commands.SignCommand - Signature value: I8UKBo86bS0pxgIqZYMfL3e7dNgwv4D8M7R1D+MG65grAz+ueDBmcfizZcvW8uXKyotL7yEdYcFTYKYpM4lNMzqp/4R7gQCWkWurqOjc56+4C2mWWyA+TcNtFAAmq1TZ0tRpcJyNtARX27JREcayPR4gJ9nUeXOSGtRW3CUsn1MsH7tKJOKY5LjIUzRmbAYkpi/Tq92alHbUd0wywWuae3g7JrDoqM9BSjZ8xxxdCcNk6EGWXLHJGBcxEA5dVfBkgYurVfaiCzgRZcF1K7+oo9JsQU/1Y3b4puPeOG/9yKHXC+3qkQb2yacuxQIXw8/QW0TNpnTrTLLk28LIecimN79mbFUERi6NyLHUSCWSCSPg8E2I2vmRG+WqUArvsGZZL+YUQtxM2h5p7Su1IC5H5z0eMQKC8+qaSaF21KpYXy+UrWvrQIw2b3bihtH7Q2bV512VAM1owqy5wkMeJ5eTaN9ZpsXIJrtXQHDpQF5kkEBRebYJ0RPYqWFYOmzH4IAc

@@ -14,20 +14,20 @@ export function ProgressModal({
   const calculatedTotal = useMemo(() => {
     if (!selectedFile) return 0;
     
-    let docCount = 0;
+    let docxCount = 0;
     
     if (selectedFile.mainFile?.path?.toLowerCase().endsWith('.docx')) {
-      docCount++;
+      docxCount++;
     }
     
     if (selectedFile.attachments?.length > 0) {
       const docxAttachments = selectedFile.attachments.filter(
         att => att.path?.toLowerCase().endsWith('.docx')
       );
-      docCount += docxAttachments.length;
+      docxCount += docxAttachments.length;
     }
     
-    return docCount > 0 ? docCount + 4 : 0;
+    return 4 + docxCount;
   }, [selectedFile]);
 
   const totalSteps = total || calculatedTotal;

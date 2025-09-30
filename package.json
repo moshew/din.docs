@@ -12,7 +12,11 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "electron": "set ELECTRON_START_URL=http://localhost:3000 && electron .",
-		"package": "electron-builder --win --dir --publish never"
+		"package": "electron-builder --win --dir --publish never",
+    "sign": "cd sign && sign_file.bat",
+    "sign-all": "cd sign && sign_all.bat",
+    "build-installer": "cd setup && build-installer.bat",
+    "full-build": "full_build.bat"
   },
   "dependencies": {
     "@trodi/electron-splashscreen": "^1.0.2",

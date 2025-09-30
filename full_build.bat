@@ -9,6 +9,20 @@ echo           Din.Docs Full Build Process
 echo ===============================================
 echo.
 
+REM Check for auto-sign parameter
+set AUTO_SIGN=false
+if /i "%1"=="--sign" set AUTO_SIGN=true
+if /i "%1"=="-s" set AUTO_SIGN=true
+
+if "!AUTO_SIGN!"=="true" (
+    echo Auto-signing enabled via command line parameter
+    set SIGN_CHOICE=y
+) else (
+    echo Code signing not requested - use --sign or -s parameter to enable
+    set SIGN_CHOICE=n
+)
+echo.
+
 REM --- Step 1: Clean up previous builds ---
 echo [1/6] Cleaning up previous builds...
 echo.
@@ -41,7 +55,11 @@ if errorlevel 1 (
     exit /b 1
 )
 
-call build_pdfgen.bat
+if /i "!SIGN_CHOICE!"=="y" (
+    call build_pdfgen.bat --sign
+) else (
+    call build_pdfgen.bat
+)
 if errorlevel 1 (
     echo [ERROR] PdfGen build failed.
     cd ..
@@ -88,7 +106,11 @@ if errorlevel 1 (
     exit /b 1
 )
 
-call build-installer.bat
+if /i "!SIGN_CHOICE!"=="y" (
+    call build-installer.bat --sign
+) else (
+    call build-installer.bat
+)
 if errorlevel 1 (
     echo [ERROR] Installer build failed.
     cd ..
@@ -97,6 +119,8 @@ if errorlevel 1 (
 
 cd ..
 echo Installer build completed.
+echo.
+
 echo.
 
 REM --- Step 6: Final summary ---
@@ -111,5 +135,19 @@ echo ✓ Web application built in dist/
 echo ✓ Electron app packaged in dist_electron/
 echo ✓ Installer created in dist_installer/
 echo.
-echo The complete Din.Docs application is ready for distribution!
+if /i "!SIGN_CHOICE!"=="y" (
+    echo Code Signing Status:
+    echo [OK] PdfGen.exe - Signed during build
+    echo [OK] Din.Docs.exe - Signed before installer packaging
+    echo [OK] Setup installer - Signed after creation
+    echo.
+    echo All executables are digitally signed and ready for distribution!
+) else (
+    echo Code Signing Status: SKIPPED
+    echo To sign later, run: sign\sign_all.bat
+    echo To auto-sign during build, use: full_build.bat --sign
+    echo.
+    echo The complete Din.Docs application is ready for distribution!
+    echo Note: For production deployment, consider signing the executables.
+)
 echo.

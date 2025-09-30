@@ -75,3 +75,18 @@ SET @sqlstmt = IF(@exist = 0, 'ALTER TABLE `users_keys` ADD INDEX `email_status`
 PREPARE stmt FROM @sqlstmt;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
+
+-- Create download_button_clicks table for tracking download button clicks
+-- טבלה למעקב אחר לחיצות על כפתור "הורידו בחינם"
+CREATE TABLE IF NOT EXISTS `download_button_clicks` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ip_address` varchar(45) NOT NULL,
+  `clicked_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `button_location` varchar(50) DEFAULT NULL COMMENT 'header, hero, cta, etc.',
+  `user_agent` text DEFAULT NULL,
+  `referer` varchar(500) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `clicked_at` (`clicked_at`),
+  KEY `ip_address` (`ip_address`),
+  KEY `button_location` (`button_location`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='מעקב אחר לחיצות על כפתורי ההורדה';

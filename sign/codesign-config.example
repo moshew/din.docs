@@ -1,0 +1,11 @@
+# SSL.com Code Signing Credentials
+# Copy this file to codesign-config.env and fill in your actual credentials
+# The .gitignore already includes *.env files
+
+# SSL.com account credentials
+CODESIGN_USERNAME=your_username_here
+CODESIGN_PASSWORD=your_password_here
+CODESIGN_TOTP_SECRET=your_totp_secret_here
+
+# CodeSignTool path
+CODE_SIGN_TOOL_PATH=C:\CodeSignTool

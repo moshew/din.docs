@@ -5,15 +5,12 @@ use PHPMailer\PHPMailer\Exception;
 require_once 'config.php';
 
 /**
- * Send welcome email using PHPMailer only (no fallback)
- * Based on your working code
+ * Send welcome email using PHPMailer with anti-spam improvements
  */
 function sendWelcomeEmail($email, $key) {
-    // Use PHPMailer only - no fallback
     return sendWelcomeEmailPHPMailer($email, $key);
 }
 
-// PHPMailer function - based on your working code
 function sendWelcomeEmailPHPMailer($email, $key) {
     try {
         require_once __DIR__ . '/PHPMailer/Exception.php';
@@ -24,22 +21,34 @@ function sendWelcomeEmailPHPMailer($email, $key) {
         $mail->IsSMTP();
         $mail->CharSet = 'UTF-8';
         $mail->Encoding = '8bit';
-        $mail->Host = "smtp.gmail.com";
+        
+        // SMTP Configuration - Using your domain server
+        $mail->Host = "mail.din-online.co.il";
         $mail->SMTPDebug = false;
         $mail->SMTPAuth = true;
-        $mail->SMTPSecure = "tls";
-        $mail->Host = "smtp.gmail.com";
-        $mail->Port = 587;
-        $mail->Username = "atty.sivanwaisman@gmail.com";
-        $mail->Password = "atyeimfhkqhxgryi";
+        $mail->SMTPSecure = "tls"; // or "ssl" depending on your server
+        $mail->Port = 587; // or 465 for SSL, check with your hosting provider
+        $mail->Username = "docs@din-online.co.il";
+        $mail->Password = "W3gZ7xBq9D@"; // Replace with actual password
+        
+        // Now sender matches SMTP username - perfect for avoiding spam!
+        $mail->SetFrom('docs@din-online.co.il', 'דין אונליין - מערכת דין.דוקס');
+        
+        $mail->AddAddress($email, "לקוח דין.דוקס");
+        
+        // Enhanced subject line
+        $mail->Subject = "=?UTF-8?B?" . base64_encode("ברוכים הבאים לדין.דוקס - מערכת ניהול מסמכים משפטיים") . "?=";
+        
+        // Add important headers to avoid spam
+        $mail->addCustomHeader('X-Mailer', 'Din-Online Legal System');
+        $mail->addCustomHeader('X-Priority', '3');
+        $mail->addCustomHeader('Importance', 'Normal');
+        $mail->addCustomHeader('List-Unsubscribe', '<mailto:unsubscribe@din-online.co.il>');
         
         $downloadLink = DOWNLOAD_FILE_URL . '?key=' . urlencode($key);
         
-        $mail->Subject = "ברוכים הבאים לדין.דוקס ‎- מערכת ניהול מסמכים משפטיים";
-        $mail->SetFrom('sivan@din-online.co.il', 'דין אונליין');
-        $mail->AddAddress($email, "לקוח דין.דוקס");
-        
-        $msg = '<!DOCTYPE html>
+        // Enhanced HTML content with better structure
+				$msg = '<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -158,9 +167,9 @@ function sendWelcomeEmailPHPMailer($email, $key) {
             <img src="https://docs.din-online.co.il/docs-logo.png" alt="דין.דוקס" class="logo" />
         </div>
         <div class="content">
-            <h2>שמחים שבחרת להצטרף אלינו‎!</h2>
+             <h2>!שמחים שבחרת להצטרף אלינו</h2>
             <p>שלום וברכה,<br>
-            תודה שבחרת להוריד את אפליקציית דין.דוקס ‎- מערכת ניהול המסמכים המשפטיים המתקדמת שלנו.</p>
+             תודה שבחרת להוריד את אפליקציית דין.דוקס - מערכת ניהול המסמכים המשפטיים המתקדמת שלנו.</p>
 
             
             <div class="download-section">
@@ -172,7 +181,7 @@ function sendWelcomeEmailPHPMailer($email, $key) {
                 <p><strong>בעל הרישיון:</strong> מרכז דין.אונליין לשירותים משפטיים מקוונים</p>
                 <p><strong>תנאי השימוש:</strong></p>
                 <ul>
-                    <li>התוכנה מסופקת "כפי שהיא" ‎(AS-IS) ללא כל אחריות מפורשת או משתמעת.</li>
+                     <li>התוכנה מסופקת "כפי שהיא" (AS-IS) ללא כל אחריות מפורשת או משתמעת.</li>
                     <li>בעל הרישיון אינו נושא באחריות לכל נזק, ישיר או עקיף, שעלול להיגרם כתוצאה משימוש בתוכנה.</li>
                     <li>אין תמיכה טכנית זמינה לגרסת הבסיס של התוכנה.</li>
                     <li>השימוש בתוכנה הוא על אחריות המשתמש בלבד.</li>
@@ -194,21 +203,40 @@ function sendWelcomeEmailPHPMailer($email, $key) {
     </div>
 </body>
 </html>';
+
+        // Add plain text version for better deliverability
+        $plainText = "ברוכים הבאים לדין.דוקס
+
+שלום וברכה,
+
+תודה רבה שבחרת להוריד את אפליקציית דין.דוקס - מערכת ניהול המסמכים המשפטיים המתקדמת שלנו.
+
+לחץ על הקישור הבא להורדת התוכנה:
+" . $downloadLink . "
+
+בברכה,
+צוות מרכז דין.אונליין
+
+מרכז דין.אונליין לשירותים משפטיים מקוונים
+support@din-online.co.il
+www.din-online.co.il";
         
         $mail->MsgHTML($msg);
+        $mail->AltBody = $plainText;
+        
         $result = $mail->Send();
         
         if ($result) {
             DinDocsLogger::info("Email sent successfully via PHPMailer", [
                 'email' => $email,
-                'method' => 'phpmailer',
+                'method' => 'phpmailer_improved',
                 'key' => $key
             ]);
             return true;
         } else {
             DinDocsLogger::error("PHPMailer send failed", [
                 'email' => $email,
-                'method' => 'phpmailer',
+                'method' => 'phpmailer_improved',
                 'error' => $mail->ErrorInfo
             ]);
             return false;

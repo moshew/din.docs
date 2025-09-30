@@ -22,6 +22,22 @@ function App() {
     }
   }, []);
 
+  // Track download button click
+  const trackDownloadClick = async (location: string) => {
+    try {
+      await fetch('/srv/track_click.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ location })
+      });
+    } catch (error) {
+      // Silent fail - we don't want to interrupt user experience
+      console.error('Failed to track click:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -135,9 +151,13 @@ function App() {
               <a href="#business" className="text-gray-700 hover:text-blue-600 font-medium mx-6">יתרונות עסקיים</a>
             </nav>
             <div className="flex items-center space-x-4">
-              <button className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-colors font-medium">
-                <a href="#free-download">הורידו בחינם</a>
-              </button>
+              <a 
+                href="#free-download" 
+                onClick={() => trackDownloadClick('header')}
+                className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-colors font-medium inline-block"
+              >
+                הורידו בחינם
+              </a>
             </div>
           </div>
         </div>
@@ -161,7 +181,11 @@ function App() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <a href="#free-download" className="bg-blue-600 text-white px-8 py-4 rounded-full hover:bg-blue-700 transition-colors font-medium text-lg">
+              <a 
+                href="#free-download" 
+                onClick={() => trackDownloadClick('hero')}
+                className="bg-blue-600 text-white px-8 py-4 rounded-full hover:bg-blue-700 transition-colors font-medium text-lg"
+              >
                 הורידו עכשיו בחינם
               </a>
             </div>
@@ -542,7 +566,11 @@ function App() {
             וייצור כתבי טענות מקצועיים עם דין.דוקס - בחינם לתמיד!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <a href="#free-download" className="bg-white text-blue-600 px-8 py-4 rounded-full hover:bg-gray-100 transition-colors font-medium text-lg">
+            <a 
+              href="#free-download" 
+              onClick={() => trackDownloadClick('cta')}
+              className="bg-white text-blue-600 px-8 py-4 rounded-full hover:bg-gray-100 transition-colors font-medium text-lg"
+            >
               הורידו עכשיו בחינם
             </a>
             </div>
