@@ -47,7 +47,9 @@ export function useDocumentFiles({
       const { detail } = event;
       try {
         if (detail.status === 'error') {
-          setError(detail.error?.message || 'אירעה שגיאה בעת יצירת ה-PDF');
+          setError(detail.msg || detail.error?.message || 'אירעה שגיאה בעת יצירת ה-PDF');
+          // Don't close the modal on error - let user read the error message
+          setProcessing(false);
         } else if (detail.status === 'success' && detail.output) {
           if (selectedFile) {
             const updatedCase = {
@@ -74,18 +76,20 @@ export function useDocumentFiles({
               forceTimestamp: Date.now()
             }, { force: true });
           }
+          
+          // Close modal on success
+          setTimeout(() => {
+            setIsProgressModalOpen(false);
+            setError(null);
+            setCurrentPhase(null);
+            setCurrentFile(null);
+            setProcessing(false);
+          }, 250);
         }
       } catch (error) {
         console.error('Failed to handle PDF generation:', error);
         setError('שגיאה בשמירת מידע המסמך');
-      } finally {
-        setTimeout(() => {
-          setIsProgressModalOpen(false);
-          setError(null);
-          setCurrentPhase(null);
-          setCurrentFile(null);
-          setProcessing(false);
-        }, 250);
+        setProcessing(false);
       }
     };
 
@@ -347,6 +351,14 @@ export function useDocumentFiles({
     }
   };
 
+  const handleCloseProgress = () => {
+    setIsProgressModalOpen(false);
+    setError(null);
+    setCurrentPhase(null);
+    setCurrentFile(null);
+    setProcessing(false);
+  };
+
   return {
     state: {
       dragOverMain,
@@ -371,6 +383,7 @@ export function useDocumentFiles({
       handleAttachmentAdd,
       handleCreate,
       handlePathCorrection,
+      handleCloseProgress,
       setIsDraft,
       setIsModalOpen
     }

@@ -70,6 +70,7 @@ export function DocumentFiles({
         phase={state.currentPhase}
         file={state.currentFile}
         selectedFile={selectedFile}
+        onClose={handlers.handleCloseProgress}
       />
     </div>
   );

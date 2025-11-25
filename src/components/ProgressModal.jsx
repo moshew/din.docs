@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { FileText, FileCheck, Loader2, Save, AlertTriangle } from 'lucide-react';
+import { FileText, FileCheck, Loader2, Save, AlertTriangle, X } from 'lucide-react';
 
 export function ProgressModal({ 
   isOpen, 
@@ -9,7 +9,8 @@ export function ProgressModal({
   error = null,
   phase = null,
   file = null,
-  selectedFile = null
+  selectedFile = null,
+  onClose
 }) {
   const calculatedTotal = useMemo(() => {
     if (!selectedFile) return 0;
@@ -38,16 +39,25 @@ export function ProgressModal({
   if (error) {
     return (
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl shadow-2xl w-[480px] h-[280px] overflow-hidden">
-          <div className="bg-gradient-to-r from-red-500 to-red-700 p-6">
+        <div className="bg-white rounded-xl shadow-2xl w-[480px] h-[280px] overflow-hidden flex flex-col">
+          <div className="bg-gradient-to-r from-red-500 to-red-700 p-6 shrink-0">
             <div className="flex items-center justify-center gap-3">
               <AlertTriangle className="w-7 h-7 text-white" />
               <h2 className="text-2xl font-semibold text-white">שגיאה</h2>
             </div>
           </div>
-          <div className="p-6">
-            <div className="bg-red-50 rounded-lg p-4 shadow-inner">
+          <div className="p-6 flex-1 flex flex-col min-h-0">
+            <div className="bg-red-50 rounded-lg p-4 shadow-inner mb-6 overflow-y-auto flex-1">
               <p className="text-lg font-medium text-red-800">{error}</p>
+            </div>
+            <div className="shrink-0 flex justify-end">
+              <button
+                onClick={onClose}
+                className="px-5 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-1.5 font-semibold text-lg"
+              >
+                <X className="w-6 h-6" />
+                סגור
+              </button>
             </div>
           </div>
         </div>

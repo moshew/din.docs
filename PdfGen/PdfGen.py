@@ -86,7 +86,7 @@ def generate(fifo, docs):
 
   pdfs = []
   current_page = 0
-  merger = PdfMerger()
+  merger = PdfMerger(strict=False)
 
   docx_count = sum(1 for attachment in docs["attachments"] if attachment["path"].endswith(".docx")) + int(docs["main"].endswith(".docx"))
   total_steps = docx_count + 4
@@ -105,9 +105,14 @@ def generate(fifo, docs):
       send_message("ממיר את המסמך הראשי לקובץ PDF", "converting", current_step)
       main_path = docx_convert(main_path, temp_dir)
     pdfs.append(main_path)
-    with open(main_path, "rb") as main_file:
-      read_pdf = PdfReader(main_file)
-      current_page = len(read_pdf.pages) + 3
+    
+    # Validate main PDF file
+    try:
+      with open(main_path, "rb") as main_file:
+        read_pdf = PdfReader(main_file, strict=False)
+        current_page = len(read_pdf.pages) + 3
+    except Exception as ex:
+      return {"status": "error", "msg": "המסמך הראשי לא תקין - " + str(ex)}
 
     if len(docs["attachments"]) > 0:
       toc = []
@@ -148,10 +153,14 @@ def generate(fifo, docs):
           appx_path = docx_convert(appx_path, temp_dir)
         pdfs.append(appx_path)
 
-        toc.append([str(current_page), rtl_line(attachment["title"], 68), str(appx_num)])
-        with open(appx_path, "rb") as app_file:
-          read_pdf = PdfReader(app_file)
-          current_page = current_page + len(read_pdf.pages) + 1
+        # Validate attachment PDF file
+        try:
+          toc.append([str(current_page), rtl_line(attachment["title"], 68), str(appx_num)])
+          with open(appx_path, "rb") as app_file:
+            read_pdf = PdfReader(app_file, strict=False)
+            current_page = current_page + len(read_pdf.pages) + 1
+        except Exception as ex:
+          return {"status": "error", "msg": f"הנספח ה-{appx_num} לא תקין - {str(ex)}"}
 
       #os.write(fifo, bytes("מייצר תוכן עיניינים לנספחים", 'utf-8'))
       pdf = MyFPDF(orientation="P", unit="mm", format="A4")
@@ -175,19 +184,98 @@ def generate(fifo, docs):
   
     current_step += 1
     total_pdfs = len(pdfs)
-    for pdf_num in range(total_pdfs):
-      if (pdf_num%2==0):
-        send_message("מאחד קבצים למסמך אחד - {}/{}".format(pdf_num//2+1, total_pdfs//2), "merging", current_step)
-      merger.append(pdfs[pdf_num])
+    try:
+      for pdf_num in range(total_pdfs):
+        if (pdf_num%2==0):
+          send_message("מאחד קבצים למסמך אחד - {}/{}".format(pdf_num//2+1, total_pdfs//2), "merging", current_step)
+        merger.append(pdfs[pdf_num])
+    except Exception as ex:
+      # Determine which file caused the error
+      if pdf_num == 0:
+        return {"status": "error", "msg": "המסמך הראשי לא תקין - לא ניתן לאחד את הקובץ"}
+      elif pdf_num == 1:
+        return {"status": "error", "msg": "תוכן העניינים לא תקין - לא ניתן לאחד את הקובץ"}
+      else:
+        # Find which attachment failed
+        attachment_index = (pdf_num - 2) // 2
+        if attachment_index < len(docs["attachments"]):
+          attachment_title = docs["attachments"][attachment_index]["title"]
+          return {"status": "error", "msg": f"נספח '{attachment_title}' לא תקין - לא ניתן לאחד את הקובץ"}
+        else:
+          return {"status": "error", "msg": f"קובץ מספר {pdf_num + 1} לא תקין - לא ניתן לאחד את הקובץ"}
+    
     current_step += 1
     send_message("שומר את המסמך המאוחד לקובץ", "merging", current_step)
 
     output_path = docs["output"]["path"]
     output_filename = os.path.basename(output_path)
     merged_file = os.path.join(temp_dir, output_filename)
-    merger.write(merged_file)
+    
+    try:
+      merger.write(merged_file)
+    except Exception as ex:
+      # The merge.write() failed, try to identify which PDF caused it
+      # We'll attempt to merge files incrementally to find the culprit
+      merger.close()
+      
+      # Test main file
+      test_merger = PdfMerger(strict=False)
+      try:
+        test_merger.append(pdfs[0])
+        test_file = os.path.join(temp_dir, "test_merge.pdf")
+        test_merger.write(test_file)
+        test_merger.close()
+        os.remove(test_file)
+      except Exception as e:
+        return {"status": "error", "msg": "המסמך הראשי לא תקין - לא ניתן לעבד את הקובץ"}
+      
+      # Test TOC if exists
+      if len(pdfs) > 1:
+        test_merger = PdfMerger(strict=False)
+        try:
+          test_merger.append(pdfs[0])
+          test_merger.append(pdfs[1])
+          test_file = os.path.join(temp_dir, "test_merge.pdf")
+          test_merger.write(test_file)
+          test_merger.close()
+          os.remove(test_file)
+        except Exception as e:
+          # Could be TOC or combination issue, but more likely the main file
+          return {"status": "error", "msg": "המסמך הראשי לא תקין - לא ניתן לעבד את הקובץ"}
+      
+      # Test each attachment pair (cover + attachment)
+      for idx, attachment in enumerate(docs.get("attachments", [])):
+        test_merger = PdfMerger(strict=False)
+        try:
+          test_merger.append(pdfs[0])
+          if len(pdfs) > 1:
+            test_merger.append(pdfs[1])  # Include TOC
+          # Add all previous attachments
+          for prev_idx in range(idx):
+            prev_cover_idx = 2 + (prev_idx * 2)
+            prev_attach_idx = prev_cover_idx + 1
+            if prev_cover_idx < len(pdfs):
+              test_merger.append(pdfs[prev_cover_idx])
+            if prev_attach_idx < len(pdfs):
+              test_merger.append(pdfs[prev_attach_idx])
+          # Add current attachment
+          cover_idx = 2 + (idx * 2)
+          attach_idx = cover_idx + 1
+          if cover_idx < len(pdfs):
+            test_merger.append(pdfs[cover_idx])
+          if attach_idx < len(pdfs):
+            test_merger.append(pdfs[attach_idx])
+          test_file = os.path.join(temp_dir, "test_merge.pdf")
+          test_merger.write(test_file)
+          test_merger.close()
+          os.remove(test_file)
+        except Exception as e:
+          return {"status": "error", "msg": f"הנספח ה-{idx + 1} לא תקין - לא ניתן לעבד את הקובץ"}
+      
+      # If we got here, unknown error
+      return {"status": "error", "msg": "שגיאה במיזוג הקבצים - " + str(ex)}
 
-    infile = PdfReader(merged_file)
+    infile = PdfReader(merged_file, strict=False)
     outfile = PdfWriter()
     total_pages = len(infile.pages)
     draft = "isDraft" in docs and docs["isDraft"]==True
@@ -208,7 +296,7 @@ def generate(fifo, docs):
   except PermissionError:
     result = {"status": "error", "msg": "לא ניתן לייצר את הקובץ, ייתכן שכבר פתוח או שאין הרשאת כתיבה לתיקייה"}
   except Exception as ex:
-    result = {"status": "error", "msg": ex}
+    result = {"status": "error", "msg": str(ex) if str(ex) else type(ex).__name__}
   finally:
     merger.close()
 
