@@ -66,7 +66,8 @@ export default function App() {
         } : null,
         attachments: result.case.files.attachments ? result.case.files.attachments.map(attachment => ({
           name: attachment.title,
-          path: attachment.path
+          path: attachment.path,
+          ...(attachment.ignoreTOC && { ignoreTOC: true })
         })) : [],
         outputFile: outputPath ? createOutputFile(getFileNameWithoutExt(outputPath), outputPath) : null
       };

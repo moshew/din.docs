@@ -13,15 +13,23 @@ from PdfGen import generate
 
 # Test parameters - modify these as needed for testing
 TEST_PARAMS = {
-    "main": "C:\\Users\\Moshe\\Nextcloud\\ויסאם\\משפחת שומלי\\היתר בניה.pdf",
+    "main": "C:\\Users\\Moshe\\Downloads\\test.pdf",
     "attachments": [
         {
-            "path": "C:\\Users\\Moshe\\Nextcloud\\ויסאם\\משפחת שומלי\\צו ירושה- אגליה בחוס.pdf",
-            "title": "צו ירושה- אגליה בחוס"
+            "path": "C:\\Users\\Moshe\\Downloads\\תביעה(1).pdf",
+            "title": "הודעות קוליות ותימלולן ששלח אלי מר אסף גוזלן באמצעות יישומון וואטסאפ בתאריכים 29/5/23, 30/5/23 "
+        },
+        {
+            "path": "C:\\Users\\Moshe\\Downloads\\chocolate_balls_recipe.pdf",
+            "title": "תכתובות הצדדים בתאריכים 2/7/24, 8/7/24 תכתובות הצדדים בתאריכים תכתובות הצדדים בתאריכים"
+        },
+        {
+            "path": "C:\\Users\\Moshe\\Downloads\\הזמנה אקווה כיף 18.9.25.pdf",
+            "title": "פסה\"ד בת״ק (י-ם) 54776-07-22 מכסימוף ואח׳ נ׳ פרנקל "
         }
     ],
     "output": {
-        "path": "C:\\Users\\Moshe\\Desktop\\כתב טענות.pdf"
+        "path": "C:\\Users\\Moshe\\Downloads\\כתב טענות כתב טענות כתב טענות.pdf"
     },
     "isDraft": False  # Set to True to add draft watermark
 }

@@ -27,7 +27,8 @@ export function MainDocument({ mainFile, onMainFileSelect, onMainFileClick, drag
             main: fileData.path,
             attachments: selectedFile.attachments.map(att => ({
               path: att.path,
-              title: att.name
+              title: att.name,
+              ...(att.ignoreTOC && { ignoreTOC: true })
             }))
           }
         });

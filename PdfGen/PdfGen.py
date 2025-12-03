@@ -48,6 +48,17 @@ def page_number(index, draft=False):
   packet.seek(0)
   return PdfReader(packet).pages[0]
 
+def attachment_index_overlay(index):
+  """Create a page overlay with attachment index number at top left"""
+  packet = io.BytesIO()
+  can = canvas.Canvas(packet, pagesize=A4)
+  page_width, page_height = A4
+  can.setFont("Helvetica-Bold", 75)
+  can.drawString(30, page_height - 80, str(index))  # Top left position
+  can.save()
+  packet.seek(0)
+  return PdfReader(packet).pages[0]
+
 def rtl_line(line, max_len=27):
   """Process RTL text line with word wrapping and BiDi display"""
   lines=[]
@@ -110,42 +121,57 @@ def generate(fifo, docs):
     try:
       with open(main_path, "rb") as main_file:
         read_pdf = PdfReader(main_file, strict=False)
-        current_page = len(read_pdf.pages) + 3
+        current_page = len(read_pdf.pages) + 1  # Next page after main
     except Exception as ex:
       return {"status": "error", "msg": "המסמך הראשי לא תקין - " + str(ex)}
 
+    attachment_first_pages = {}  # Maps page_number -> toc_appx_num (for index overlay)
+    
     if len(docs["attachments"]) > 0:
       toc = []
       toc_path = os.path.join(temp_dir, "toc.pdf")
-      pdfs.append(toc_path)
+      toc_inserted = False
+      
+      # Check if there are any non-ignoreTOC attachments (need TOC)
+      has_toc_attachments = any(not att.get("ignoreTOC", False) for att in docs["attachments"])
 
-      appx_num = 0
-      #if fifo: os.write(fifo, bytes("מייצר דף מקדים לנספחים", 'utf-8'))
-      for attachment in docs["attachments"]:
-        pdf = FPDF(orientation="P", unit="mm", format="A4")
-        pdf.set_top_margin(40)
-        pdf.add_font('David', '', os.path.join(base_dir, "fonts", "David.ttf"), uni=True)
-        pdf.add_page()
+      # Single pass through all attachments
+      for appx_num, attachment in enumerate(docs["attachments"], start=1):
+        is_ignore_toc = attachment.get("ignoreTOC", False)
+        
+        # Insert TOC before the first non-ignoreTOC attachment
+        if not toc_inserted and not is_ignore_toc and has_toc_attachments:
+          pdfs.append(toc_path)
+          current_page += 1  # +1 for TOC page
+          toc_inserted = True
+        
+        if not is_ignore_toc:
+          current_page += 1  # +1 for cover page (increment before creating cover)
+          
+          # Create cover page for non-ignoreTOC attachment
+          pdf = FPDF(orientation="P", unit="mm", format="A4")
+          pdf.set_top_margin(40)
+          pdf.add_font('David', '', os.path.join(base_dir, "fonts", "David.ttf"), uni=True)
+          pdf.add_page()
 
-        appx_num += 1
-        appx_title = "נספח " + str(appx_num)
-        titles = [ rtl_line(appx_title), rtl_line(attachment["title"]), rtl_line("עמ' " + str(current_page)) ]
+          toc_appx_num = len(toc) + 1
+          appx_title = "נספח " + str(toc_appx_num)
 
-        pdf.set_font("David", "U", size=36)
-        pdf.multi_cell(0, 14, txt=rtl_line(appx_title), border=0, align="C")
-        pdf.set_font("David", size=36)
-        pdf.cell(0, 15, txt="", ln=1, border=0, align="C")
-        pdf.multi_cell(0, 14, txt=rtl_line(attachment["title"]), border=0, align="C")
-        pdf.cell(0, 45, txt="", ln=1, border=0, align="C")
-        pdf.multi_cell(0, 14, txt=rtl_line("עמ' " + str(current_page)), border=0, align="C")
+          pdf.set_font("David", "U", size=36)
+          pdf.multi_cell(0, 14, txt=rtl_line(appx_title), border=0, align="C")
+          pdf.set_font("David", size=36)
+          pdf.cell(0, 15, txt="", ln=1, border=0, align="C")
+          pdf.multi_cell(0, 14, txt=rtl_line(attachment["title"]), border=0, align="C")
+          pdf.cell(0, 45, txt="", ln=1, border=0, align="C")
+          pdf.multi_cell(0, 14, txt=rtl_line("עמ' " + str(current_page)), border=0, align="C")
 
-        attachment_filename = os.path.splitext(attachment["path"])[0] + ".pdf"
-        attachment_filename = "_" + os.path.basename(attachment_filename)
-        appx_path = os.path.join(temp_dir, attachment_filename)
-        pdf.output(appx_path)
-        # pdf.close() - not needed in newer versions
+          attachment_filename = os.path.splitext(attachment["path"])[0] + ".pdf"
+          attachment_filename = "_" + os.path.basename(attachment_filename)
+          cover_path = os.path.join(temp_dir, attachment_filename)
+          pdf.output(cover_path)
 
-        pdfs.append(appx_path)
+          pdfs.append(cover_path)
+        
         appx_path = attachment["path"]
         if attachment["path"].endswith(".docx"):
           current_step += 1
@@ -153,34 +179,40 @@ def generate(fifo, docs):
           appx_path = docx_convert(appx_path, temp_dir)
         pdfs.append(appx_path)
 
-        # Validate attachment PDF file
+        # Validate attachment PDF file and update page count
         try:
-          toc.append([str(current_page), rtl_line(attachment["title"], 68), str(appx_num)])
           with open(appx_path, "rb") as app_file:
             read_pdf = PdfReader(app_file, strict=False)
-            current_page = current_page + len(read_pdf.pages) + 1
+            if not is_ignore_toc:
+              # Add to TOC only for non-ignoreTOC attachments
+              toc_appx_num = len(toc) + 1
+              # Track first page of attachment for index overlay
+              attachment_first_pages[current_page] = toc_appx_num
+              toc.append([str(current_page), rtl_line(attachment["title"], 68), str(toc_appx_num)])
+            current_page += len(read_pdf.pages)
         except Exception as ex:
           return {"status": "error", "msg": f"הנספח ה-{appx_num} לא תקין - {str(ex)}"}
 
-      #os.write(fifo, bytes("מייצר תוכן עיניינים לנספחים", 'utf-8'))
-      pdf = MyFPDF(orientation="P", unit="mm", format="A4")
-      pdf.set_top_margin(20)
-      pdf.set_left_margin(18)
-      pdf.add_font('David', '', os.path.join(base_dir, "fonts", "David.ttf"))
-      pdf.add_font('Davidbd', '', os.path.join(base_dir, "fonts", "davidbd.ttf"))
-      pdf.add_page()
-      pdf.set_font("Davidbd", "U", size=18)
-      pdf.cell(0, 10, txt="תוכן עניינים"[::-1], new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="C")
-      pdf.cell(0, 7, txt="", border=0, new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="C")
-      pdf.set_font("Davidbd", size=14)
-      headers = ["עמ'", "שם הנספח", "מס'"]
-      table_data = [[get_display(reshape(headers[0])), get_display(reshape(headers[1])), get_display(reshape(headers[2]))]]
-      with pdf.table(table_data, first_row_as_headings=False, col_widths=(7, 86, 7), text_align="CENTER") as table:
-        pass
-      pdf.set_font("David", size=12)
-      with pdf.table(toc, first_row_as_headings=False, line_height=pdf.font_size, col_widths=(7, 86, 7), text_align=("CENTER", "RIGHT", "CENTER"), padding=2) as table:
-        pass    
-      pdf.output(toc_path)
+      # Generate TOC PDF if there are TOC entries
+      if has_toc_attachments and len(toc) > 0:
+        pdf = MyFPDF(orientation="P", unit="mm", format="A4")
+        pdf.set_top_margin(20)
+        pdf.set_left_margin(18)
+        pdf.add_font('David', '', os.path.join(base_dir, "fonts", "David.ttf"))
+        pdf.add_font('Davidbd', '', os.path.join(base_dir, "fonts", "davidbd.ttf"))
+        pdf.add_page()
+        pdf.set_font("Davidbd", "U", size=18)
+        pdf.cell(0, 10, txt="תוכן עניינים"[::-1], new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="C")
+        pdf.cell(0, 7, txt="", border=0, new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="C")
+        pdf.set_font("Davidbd", size=14)
+        headers = ["עמ'", "שם הנספח", "מס'"]
+        table_data = [[get_display(reshape(headers[0])), get_display(reshape(headers[1])), get_display(reshape(headers[2]))]]
+        with pdf.table(table_data, first_row_as_headings=False, col_widths=(7, 86, 7), text_align="CENTER") as table:
+          pass
+        pdf.set_font("David", size=12)
+        with pdf.table(toc, first_row_as_headings=False, line_height=pdf.font_size, col_widths=(7, 86, 7), text_align=("CENTER", "RIGHT", "CENTER"), padding=2) as table:
+          pass    
+        pdf.output(toc_path)
   
     current_step += 1
     total_pdfs = len(pdfs)
@@ -285,6 +317,10 @@ def generate(fifo, docs):
       send_message("ממספר את העמודים במסמך - {}/{}".format(page_num+1, total_pages), "numbering", current_step)
       page = infile.pages[page_num]
       page.merge_page(page_number(page_num+1, draft))
+      # Add attachment index overlay on first page of each non-ignoreTOC attachment
+      page_number_1based = page_num + 1
+      if page_number_1based in attachment_first_pages:
+        page.merge_page(attachment_index_overlay(attachment_first_pages[page_number_1based]))
       outfile.add_page(page)
     current_step += 1
     send_message("מפיק את הקובץ הסופי של המסמך המעובד", "saving", current_step)

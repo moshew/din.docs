@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FileText, Plus, Pencil, Check, X, GripVertical, Trash2 } from 'lucide-react';
+import { FileText, Plus, Pencil, Check, X, GripVertical, Trash2, EyeOff } from 'lucide-react';
 import { getFileNameWithoutExt } from '../utils/fileUtils';
 
 export function Attachments({ 
@@ -39,8 +39,11 @@ export function Attachments({
     onAttachmentAdd();
   };
 
-  const getFileIcon = (filename) => {
-    const extension = filename?.toLowerCase().split('.').pop();
+  const getFileIcon = (file) => {
+    if (file.ignoreTOC) {
+      return <EyeOff className="w-4 h-4 text-[#d84315] flex-shrink-0 ml-3" />;
+    }
+    const extension = file.path?.toLowerCase().split('.').pop();
     return <FileText className={`w-4 h-4 ${extension === 'pdf' ? 'text-[#E44D26]' : 'text-[#2B579A]'} flex-shrink-0 ml-3`} />;
   };
 
@@ -49,6 +52,17 @@ export function Attachments({
     setEditedAttachments(prev => {
       const newAttachments = [...prev];
       newAttachments[index] = { ...newAttachments[index], name };
+      return newAttachments;
+    });
+  };
+
+  const handleToggleIgnoreTOC = (index) => {
+    setEditedAttachments(prev => {
+      const newAttachments = [...prev];
+      newAttachments[index] = { 
+        ...newAttachments[index], 
+        ignoreTOC: !newAttachments[index].ignoreTOC 
+      };
       return newAttachments;
     });
   };
@@ -63,7 +77,8 @@ export function Attachments({
             main: selectedFile.mainFile?.path || null,
             attachments: editedAttachments.map(att => ({
               path: att.path,
-              title: att.name
+              title: att.name,
+              ...(att.ignoreTOC && { ignoreTOC: true })
             }))
           }
         });
@@ -177,7 +192,7 @@ export function Attachments({
           <div className="flex items-center space-x-3 flex-1 min-w-0">
             {!isEditMode && (
               <div className="flex-shrink-0 py-2 pr-1">
-                {getFileIcon(file.path)}
+                {getFileIcon(file)}
               </div>
             )}
             {isEditMode ? (
@@ -205,13 +220,25 @@ export function Attachments({
             )}
           </div>
           {isEditMode && hoveredIndex === index && hoveredDragHandle !== index && (
-            <button
-              onClick={() => handleAttachmentRemove(index)}
-              className="delete-button absolute left-0 bottom-1.5 p-1 hover:bg-[#ffebee] transition-colors"
-              title="מחק נספח"
-            >
-              <Trash2 className="w-4 h-4 text-[#a4262c]" />
-            </button>
+            <div className="absolute left-0 bottom-1.5 flex items-center">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleToggleIgnoreTOC(index);
+                }}
+                className={`p-1 transition-colors ${file.ignoreTOC ? 'bg-[#fff3e0]' : 'hover:bg-[#f3f2f1]'}`}
+                title={file.ignoreTOC ? "הסר מתוכן העניינים (פעיל)" : "הסר מתוכן העניינים"}
+              >
+                <EyeOff className={`w-4 h-4 ${file.ignoreTOC ? 'text-[#d84315]' : 'text-[#605e5c]'}`} />
+              </button>
+              <button
+                onClick={() => handleAttachmentRemove(index)}
+                className="delete-button p-1 hover:bg-[#ffebee] transition-colors"
+                title="מחק נספח"
+              >
+                <Trash2 className="w-4 h-4 text-[#a4262c]" />
+              </button>
+            </div>
           )}
         </div>
       </div>

@@ -39,6 +39,7 @@
   "build": {
     "appId": "com.din.docs",
     "productName": "Din.Docs",
+    "electronLanguages": ["en-US", "he"],
     "directories": {
       "output": "dist_electron"
     },

@@ -61,7 +61,8 @@ export function useDocumentFiles({
                 main: selectedFile.mainFile?.path || null,
                 attachments: selectedFile.attachments.map(att => ({
                   path: att.path,
-                  title: att.name
+                  title: att.name,
+                  ...(att.ignoreTOC && { ignoreTOC: true })
                 }))
               }
             };
@@ -238,7 +239,8 @@ export function useDocumentFiles({
             main: selectedFile.mainFile.path,
             attachments: selectedFile.attachments.map(att => ({
               path: att.path,
-              title: att.name
+              title: att.name,
+              ...(att.ignoreTOC && { ignoreTOC: true })
             }))
           }
         },
@@ -280,7 +282,8 @@ export function useDocumentFiles({
         main: selectedFile.mainFile.path,
         attachments: selectedFile.attachments.map(att => ({
           path: att.path,
-          title: att.name
+          title: att.name,
+          ...(att.ignoreTOC && { ignoreTOC: true })
         })),
         output: {
           path: newOutputPath
