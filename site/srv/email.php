@@ -6,178 +6,49 @@ function sendWelcomeEmail($email, $key) {
 
     $html = '<!DOCTYPE html>
 <html lang="he" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body {
-            font-family: "David", Arial, sans-serif;
-            direction: rtl;
-            line-height: 1.6;
-            text-align: right;
-            margin: 0;
-            padding: 0;
-            unicode-bidi: bidi-override;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .header {
-            text-align: center;
-        }
-        .logo {
-            height: 280px;
-            margin: 0 auto;
-            display: block;
-        }
-        .content {
-            background: white;
-            text-align: right;
-        }
-        .content h2 {
-            text-align: center;
-            color: #333;
-            margin-top: -15px;
-            margin-bottom: 35px;
-            font-size: 22px;
-        }
-        .content p {
-            text-align: right;
-            margin-bottom: 15px;
-            direction: rtl;
-            unicode-bidi: embed;
-        }
-        .download-section {
-            text-align: center;
-            margin: 30px 0;
-        }
-        .download-btn {
-            display: inline-block;
-            padding: 15px 30px;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 16px;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-        }
-        .license-box {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 25px;
-            margin: 25px 0;
-            font-size: 14px;
-            text-align: right;
-        }
-        .license-box h3 {
-            text-align: center;
-            color: #495057;
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        .license-box ul {
-            text-align: right;
-            padding-right: 20px;
-            direction: rtl;
-            unicode-bidi: embed;
-        }
-        .license-box li {
-            margin-bottom: 8px;
-            text-align: right;
-            direction: rtl;
-            unicode-bidi: embed;
-        }
-        .footer {
-            padding: 5px 0px;
-            background: #343a40;
-            color: #adb5bd;
-            text-align: center;
-            font-size: 12px;
-        }
-        .footer p {
-            margin: 5px 0;
-            text-align: center;
-        }
-        .signature {
-            margin-top: 30px;
-            margin-bottom: 50px;
-            padding-top: 20px;
-            border-top: 1px solid #e9ecef;
-            text-align: right;
-            direction: rtl;
-            unicode-bidi: embed;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <img src="https://docs.din-online.co.il/docs-logo.png" alt="דין.דוקס" class="logo" />
-        </div>
-        <div class="content">
-            <h2>!שמחים שבחרת להצטרף אלינו</h2>
-            <p>שלום וברכה,<br>
-            תודה שבחרת להוריד את אפליקציית דין.דוקס - מערכת ניהול המסמכים המשפטיים המתקדמת שלנו.</p>
+<head><meta charset="UTF-8"></head>
+<body style="font-family:Arial,sans-serif;direction:rtl;text-align:right;color:#333;max-width:600px;margin:0 auto;padding:20px;">
 
-            <div class="download-section">
-                <a href="' . htmlspecialchars($downloadLink) . '" class="download-btn">הורדת התוכנה</a>
-            </div>
+    <h2 style="color:#2c5282;">ברוכים הבאים לדין.דוקס</h2>
 
-            <div class="license-box">
-                <h3>הסכם רישיון שימוש</h3>
-                <p><strong>בעל הרישיון:</strong> מרכז דין.אונליין לשירותים משפטיים מקוונים</p>
-                <p><strong>תנאי השימוש:</strong></p>
-                <ul>
-                    <li>התוכנה מסופקת "כפי שהיא" (AS-IS) ללא כל אחריות מפורשת או משתמעת.</li>
-                    <li>בעל הרישיון אינו נושא באחריות לכל נזק, ישיר או עקיף, שעלול להיגרם כתוצאה משימוש בתוכנה.</li>
-                    <li>אין תמיכה טכנית זמינה לגרסת הבסיס של התוכנה.</li>
-                    <li>השימוש בתוכנה הוא על אחריות המשתמש בלבד.</li>
-                    <li>אין לשנות, להפיץ או למכור את התוכנה ללא אישור בכתב מבעל הרישיון.</li>
-                    <li>הרישיון בתוקף עד להודעה על ביטולו על ידי בעל הרישיון.</li>
-                </ul>
-                <p><em>השימוש בתוכנה מהווה הסכמה מלאה לתנאים אלה</em></p>
-            </div>
+    <p>תודה שנרשמת למערכת דין.דוקס. לחץ על הקישור להורדת התוכנה:</p>
 
-            <div class="signature">
-                <p>מאחלים לך חוויית שימוש נעימה ומוצלחת!</p>
-                <p>בברכה,<br>צוות מרכז דין.אונליין</p>
-            </div>
-        </div>
-        <div class="footer">
-            <p>מרכז דין.אונליין לשירותים משפטיים מקוונים</p>
-            <p>אימייל זה נשלח באופן אוטומטי, אנא אל תשיבו עליו ישירות</p>
-        </div>
-    </div>
+    <p style="margin:30px 0;">
+        <a href="' . htmlspecialchars($downloadLink) . '" style="background:#2c5282;color:white;padding:12px 24px;text-decoration:none;border-radius:4px;">לחץ כאן להורדה</a>
+    </p>
+
+    <p>הקישור תקף לשימוש חד-פעמי.</p>
+
+    <hr style="border:none;border-top:1px solid #e2e8f0;margin:30px 0;">
+
+    <p style="font-size:13px;color:#718096;">
+        בברכה,<br>
+        צוות מרכז דין.אונליין<br>
+        <a href="https://din-online.co.il" style="color:#718096;">din-online.co.il</a>
+    </p>
+
 </body>
 </html>';
 
     $plainText = "ברוכים הבאים לדין.דוקס
 
-שלום וברכה,
+תודה שנרשמת למערכת דין.דוקס.
+לחץ על הקישור להורדת התוכנה:
 
-תודה רבה שבחרת להוריד את אפליקציית דין.דוקס - מערכת ניהול המסמכים המשפטיים המתקדמת שלנו.
-
-לחץ על הקישור הבא להורדת התוכנה:
 {$downloadLink}
+
+הקישור תקף לשימוש חד-פעמי.
 
 בברכה,
 צוות מרכז דין.אונליין
-
-מרכז דין.אונליין לשירותים משפטיים מקוונים
-support@din-online.co.il
-www.din-online.co.il";
+din-online.co.il";
 
     $payload = json_encode([
         'from'    => FROM_NAME . ' <' . FROM_EMAIL . '>',
         'to'      => [$email],
-        'subject' => 'ברוכים הבאים לדין.דוקס - מערכת ניהול מסמכים משפטיים',
+        'subject' => 'קישור ההורדה שלך - דין.דוקס',
         'html'    => $html,
         'text'    => $plainText,
-        'headers' => [
-            'List-Unsubscribe' => '<mailto:unsubscribe@din-online.co.il>',
-        ],
     ]);
 
     $ch = curl_init('https://api.resend.com/emails');
