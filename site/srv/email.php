@@ -1,82 +1,37 @@
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
 require_once 'config.php';
 
-/**
- * Send welcome email using PHPMailer with anti-spam improvements
- */
 function sendWelcomeEmail($email, $key) {
-    return sendWelcomeEmailPHPMailer($email, $key);
-}
+    $downloadLink = DOWNLOAD_FILE_URL . '?key=' . urlencode($key);
 
-function sendWelcomeEmailPHPMailer($email, $key) {
-    try {
-        require_once __DIR__ . '/PHPMailer/Exception.php';
-        require_once __DIR__ . '/PHPMailer/PHPMailer.php';
-        require_once __DIR__ . '/PHPMailer/SMTP.php';
-        
-        $mail = new PHPMailer();
-        $mail->IsSMTP();
-        $mail->CharSet = 'UTF-8';
-        $mail->Encoding = '8bit';
-        
-        // SMTP Configuration - Using your domain server
-        $mail->Host = "mail.din-online.co.il";
-        $mail->SMTPDebug = false;
-        $mail->SMTPAuth = true;
-        $mail->SMTPSecure = "tls"; // or "ssl" depending on your server
-        $mail->Port = 587; // or 465 for SSL, check with your hosting provider
-        $mail->Username = "docs@din-online.co.il";
-        $mail->Password = "W3gZ7xBq9D@"; // Replace with actual password
-        
-        // Now sender matches SMTP username - perfect for avoiding spam!
-        $mail->SetFrom('docs@din-online.co.il', 'דין אונליין - מערכת דין.דוקס');
-        
-        $mail->AddAddress($email, "לקוח דין.דוקס");
-        
-        // Enhanced subject line
-        $mail->Subject = "=?UTF-8?B?" . base64_encode("ברוכים הבאים לדין.דוקס - מערכת ניהול מסמכים משפטיים") . "?=";
-        
-        // Add important headers to avoid spam
-        $mail->addCustomHeader('X-Mailer', 'Din-Online Legal System');
-        $mail->addCustomHeader('X-Priority', '3');
-        $mail->addCustomHeader('Importance', 'Normal');
-        $mail->addCustomHeader('List-Unsubscribe', '<mailto:unsubscribe@din-online.co.il>');
-        
-        $downloadLink = DOWNLOAD_FILE_URL . '?key=' . urlencode($key);
-        
-        // Enhanced HTML content with better structure
-				$msg = '<!DOCTYPE html>
+    $html = '<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <style>
-        body { 
-            font-family: "David", Arial, sans-serif; 
-            direction: rtl; 
-            line-height: 1.6; 
+        body {
+            font-family: "David", Arial, sans-serif;
+            direction: rtl;
+            line-height: 1.6;
             text-align: right;
             margin: 0;
             padding: 0;
             unicode-bidi: bidi-override;
         }
-        .container { 
-            max-width: 600px; 
-            margin: 0 auto; 
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
         }
-        .header { 
-            text-align: center; 
+        .header {
+            text-align: center;
         }
         .logo {
             height: 280px;
             margin: 0 auto;
             display: block;
         }
-
-        .content { 
-            background: white; 
+        .content {
+            background: white;
             text-align: right;
         }
         .content h2 {
@@ -96,28 +51,23 @@ function sendWelcomeEmailPHPMailer($email, $key) {
             text-align: center;
             margin: 30px 0;
         }
-        .download-btn { 
-            display: inline-block; 
-            padding: 15px 30px; 
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%); 
-            color: white; 
-            text-decoration: none; 
-            border-radius: 8px; 
+        .download-btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
             font-weight: bold;
             font-size: 16px;
             box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-            transition: all 0.3s ease;
         }
-        .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
-        }
-        .license-box { 
-            background: #f8f9fa; 
-            border: 1px solid #e9ecef; 
+        .license-box {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
             border-radius: 8px;
-            padding: 25px; 
-            margin: 25px 0; 
+            padding: 25px;
+            margin: 25px 0;
             font-size: 14px;
             text-align: right;
         }
@@ -139,12 +89,12 @@ function sendWelcomeEmailPHPMailer($email, $key) {
             direction: rtl;
             unicode-bidi: embed;
         }
-        .footer { 
-            padding: 5px 0px; 
-            background: #343a40; 
+        .footer {
+            padding: 5px 0px;
+            background: #343a40;
             color: #adb5bd;
-            text-align: center; 
-            font-size: 12px; 
+            text-align: center;
+            font-size: 12px;
         }
         .footer p {
             margin: 5px 0;
@@ -167,21 +117,20 @@ function sendWelcomeEmailPHPMailer($email, $key) {
             <img src="https://docs.din-online.co.il/docs-logo.png" alt="דין.דוקס" class="logo" />
         </div>
         <div class="content">
-             <h2>!שמחים שבחרת להצטרף אלינו</h2>
+            <h2>!שמחים שבחרת להצטרף אלינו</h2>
             <p>שלום וברכה,<br>
-             תודה שבחרת להוריד את אפליקציית דין.דוקס - מערכת ניהול המסמכים המשפטיים המתקדמת שלנו.</p>
+            תודה שבחרת להוריד את אפליקציית דין.דוקס - מערכת ניהול המסמכים המשפטיים המתקדמת שלנו.</p>
 
-            
             <div class="download-section">
                 <a href="' . htmlspecialchars($downloadLink) . '" class="download-btn">הורדת התוכנה</a>
             </div>
-            
+
             <div class="license-box">
                 <h3>הסכם רישיון שימוש</h3>
                 <p><strong>בעל הרישיון:</strong> מרכז דין.אונליין לשירותים משפטיים מקוונים</p>
                 <p><strong>תנאי השימוש:</strong></p>
                 <ul>
-                     <li>התוכנה מסופקת "כפי שהיא" (AS-IS) ללא כל אחריות מפורשת או משתמעת.</li>
+                    <li>התוכנה מסופקת "כפי שהיא" (AS-IS) ללא כל אחריות מפורשת או משתמעת.</li>
                     <li>בעל הרישיון אינו נושא באחריות לכל נזק, ישיר או עקיף, שעלול להיגרם כתוצאה משימוש בתוכנה.</li>
                     <li>אין תמיכה טכנית זמינה לגרסת הבסיס של התוכנה.</li>
                     <li>השימוש בתוכנה הוא על אחריות המשתמש בלבד.</li>
@@ -190,29 +139,28 @@ function sendWelcomeEmailPHPMailer($email, $key) {
                 </ul>
                 <p><em>השימוש בתוכנה מהווה הסכמה מלאה לתנאים אלה</em></p>
             </div>
-            
+
             <div class="signature">
                 <p>מאחלים לך חוויית שימוש נעימה ומוצלחת!</p>
                 <p>בברכה,<br>צוות מרכז דין.אונליין</p>
             </div>
         </div>
         <div class="footer">
-                    <p>מרכז דין.אונליין לשירותים משפטיים מקוונים</p>
-        <p>אימייל זה נשלח באופן אוטומטי, אנא אל תשיבו עליו ישירות</p>
+            <p>מרכז דין.אונליין לשירותים משפטיים מקוונים</p>
+            <p>אימייל זה נשלח באופן אוטומטי, אנא אל תשיבו עליו ישירות</p>
         </div>
     </div>
 </body>
 </html>';
 
-        // Add plain text version for better deliverability
-        $plainText = "ברוכים הבאים לדין.דוקס
+    $plainText = "ברוכים הבאים לדין.דוקס
 
 שלום וברכה,
 
 תודה רבה שבחרת להוריד את אפליקציית דין.דוקס - מערכת ניהול המסמכים המשפטיים המתקדמת שלנו.
 
 לחץ על הקישור הבא להורדת התוכנה:
-" . $downloadLink . "
+{$downloadLink}
 
 בברכה,
 צוות מרכז דין.אונליין
@@ -220,42 +168,54 @@ function sendWelcomeEmailPHPMailer($email, $key) {
 מרכז דין.אונליין לשירותים משפטיים מקוונים
 support@din-online.co.il
 www.din-online.co.il";
-        
-        $mail->MsgHTML($msg);
-        $mail->AltBody = $plainText;
-        
-        $result = $mail->Send();
-        
-        if ($result) {
-            DinDocsLogger::info("Email sent successfully via PHPMailer", [
-                'email' => $email,
-                'method' => 'phpmailer_improved',
-                'key' => $key
-            ]);
-            return true;
-        } else {
-            DinDocsLogger::error("PHPMailer send failed", [
-                'email' => $email,
-                'method' => 'phpmailer_improved',
-                'error' => $mail->ErrorInfo
-            ]);
-            return false;
-        }
-        
-    } catch (Exception $e) {
-        DinDocsLogger::error("PHPMailer exception", [
-            'email' => $email,
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-        return false;
-    } catch (Error $e) {
-        DinDocsLogger::error("PHPMailer error", [
-            'email' => $email,
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
+
+    $payload = json_encode([
+        'from'    => FROM_NAME . ' <' . FROM_EMAIL . '>',
+        'to'      => [$email],
+        'subject' => 'ברוכים הבאים לדין.דוקס - מערכת ניהול מסמכים משפטיים',
+        'html'    => $html,
+        'text'    => $plainText,
+        'headers' => [
+            'List-Unsubscribe' => '<mailto:unsubscribe@din-online.co.il>',
+        ],
+    ]);
+
+    $ch = curl_init('https://api.resend.com/emails');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => $payload,
+        CURLOPT_HTTPHEADER     => [
+            'Authorization: Bearer ' . RESEND_API_KEY,
+            'Content-Type: application/json',
+        ],
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($curlError) {
+        DinDocsLogger::error("Resend curl error", ['email' => $email, 'error' => $curlError]);
         return false;
     }
+
+    $data = json_decode($response, true);
+
+    if ($httpCode === 200 || $httpCode === 201) {
+        DinDocsLogger::info("Email sent successfully via Resend", [
+            'email' => $email,
+            'id'    => $data['id'] ?? null,
+        ]);
+        return true;
+    }
+
+    DinDocsLogger::error("Resend API error", [
+        'email'    => $email,
+        'httpCode' => $httpCode,
+        'response' => $response,
+    ]);
+    return false;
 }
 ?>

@@ -9,13 +9,10 @@ define('DB_NAME', 'docs');
 define('DB_USER', 'admin');
 define('DB_PASS', 'Aa123456');
 
-// Email configuration
-define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_PORT', 465); // Changed to 465 for SSL
-define('SMTP_USER', 'atty.sivanwaisman@gmail.com');
-define('SMTP_PASS', 'atyeimfhkqhxgryi');
-define('FROM_EMAIL', 'sivan@din-online.co.il');
-define('FROM_NAME', 'מרכז דין.אונליין');
+// Email configuration (Resend.com)
+define('RESEND_API_KEY', 're_QbpHgthW_LuuhhXxPPBaECcervUWn6PdF');
+define('FROM_EMAIL', 'docs@din-online.co.il');
+define('FROM_NAME', 'דין אונליין - מערכת דין.דוקס');
 
 // Site configuration
 define('SITE_URL', 'https://docs.din-online.co.il');
