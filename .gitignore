@@ -20,10 +20,6 @@ PdfGen/__pycache__
 .env.test.local
 .env.production.local
 
-# Code signing configuration (contains sensitive credentials)
-setup/codesign-config.env
-sign/codesign-config.env
-
 # Logs
 npm-debug.log*
 yarn-debug.log*
