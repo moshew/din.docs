@@ -7,7 +7,7 @@ import shutil
 import datetime
 import tempfile
 
-from docx2pdf import convert
+import win32com.client
 from fpdf import FPDF, HTMLMixin
 from fpdf.fonts import FontFace
 from fpdf.enums import XPos, YPos
@@ -21,19 +21,59 @@ from reportlab.lib.pagesizes import A4
 
 PIPE_PATH = "\\\\.\\pipe\\pdfpipe"
 
+WD_FORMAT_PDF = 17
+WD_DO_NOT_SAVE_CHANGES = 0
+WD_ALERTS_NONE = 0
+
 class MyFPDF(FPDF, HTMLMixin):
   pass
 
-def docx_convert(doc_path, pdf_dir):
-  """Convert DOCX file to PDF"""
-  doc_file = os.path.basename(doc_path)
-  pre, ext = os.path.splitext(doc_file)
-  pdf_file = pre + ".pdf"
-  
-  pdf_path = os.path.join(pdf_dir, pdf_file)
+class DocxConverter:
+  """Convert DOCX files to PDF using a private, hidden Word instance.
 
-  convert(doc_path, pdf_path)
-  return pdf_path
+  win32com's Dispatch attaches to the user's running Word, so closing documents
+  or quitting it would close the user's documents too. DispatchEx always starts
+  a separate WINWORD.EXE, which is the only instance we close."""
+
+  def __init__(self, work_dir):
+    self.work_dir = work_dir
+    self.word = None
+    self.count = 0
+
+  def convert(self, doc_path):
+    """Convert a copy of doc_path to PDF and return the PDF path"""
+    self.count += 1
+    pre = os.path.splitext(os.path.basename(doc_path))[0]
+    # Unique names - main and attachments from different folders may share a file name
+    docx_copy = os.path.join(self.work_dir, "{}_{}.docx".format(self.count, pre))
+    pdf_path = os.path.join(self.work_dir, "{}_{}.pdf".format(self.count, pre))
+
+    # Work on a copy, so a document open (and locked) in the user's Word is never touched
+    try:
+      shutil.copyfile(doc_path, docx_copy)
+    except OSError:
+      raise Exception("לא ניתן לקרוא את הקובץ " + os.path.basename(doc_path))
+
+    if self.word is None:
+      self.word = win32com.client.DispatchEx("Word.Application")
+      self.word.Visible = False
+      self.word.DisplayAlerts = WD_ALERTS_NONE
+
+    doc = self.word.Documents.Open(docx_copy, ConfirmConversions=False, ReadOnly=True, AddToRecentFiles=False, Visible=False)
+    try:
+      doc.SaveAs(pdf_path, FileFormat=WD_FORMAT_PDF)
+    finally:
+      doc.Close(WD_DO_NOT_SAVE_CHANGES)
+    return pdf_path
+
+  def close(self):
+    """Quit the private Word instance, if it was started"""
+    if self.word is not None:
+      try:
+        self.word.Quit(WD_DO_NOT_SAVE_CHANGES)
+      except Exception:
+        pass  # Word may already be gone, nothing left to clean up
+      self.word = None
 
 def page_number(index, draft=False):
   """Create a page with page number and optional draft watermark"""
@@ -98,6 +138,7 @@ def generate(fifo, docs):
   pdfs = []
   current_page = 0
   merger = PdfMerger(strict=False)
+  converter = DocxConverter(temp_dir)
 
   docx_count = sum(1 for attachment in docs["attachments"] if attachment["path"].endswith(".docx")) + int(docs["main"].endswith(".docx"))
   total_steps = docx_count + 4
@@ -114,7 +155,7 @@ def generate(fifo, docs):
     if main_path.endswith(".docx"):
       current_step += 1
       send_message("ממיר את המסמך הראשי לקובץ PDF", "converting", current_step)
-      main_path = docx_convert(main_path, temp_dir)
+      main_path = converter.convert(main_path)
     pdfs.append(main_path)
     
     # Validate main PDF file
@@ -176,7 +217,7 @@ def generate(fifo, docs):
         if attachment["path"].endswith(".docx"):
           current_step += 1
           send_message("ממיר את נספח {} לקובץ PDF".format(appx_num), "converting", current_step)
-          appx_path = docx_convert(appx_path, temp_dir)
+          appx_path = converter.convert(appx_path)
         pdfs.append(appx_path)
 
         # Validate attachment PDF file and update page count
@@ -335,6 +376,7 @@ def generate(fifo, docs):
     result = {"status": "error", "msg": str(ex) if str(ex) else type(ex).__name__}
   finally:
     merger.close()
+    converter.close()
 
   #current_step += 1
   #send_message("מוחק קבצים זמניים", "saving", current_step)
